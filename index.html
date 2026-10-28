@@ -68,8 +68,14 @@
   .tt { display: flex; align-items: center; line-height: 1; white-space: nowrap; }
   .tt b { font-size: 29px; font-weight: 700; }
   /* Én linje pr. aftale i 3 faste kolonner: klokkeslæt · bogstaver · tekst */
-  .ev { flex: none; display: grid; grid-template-columns: 76px 68px minmax(0, 1fr); column-gap: 5px; align-items: center; min-height: 36px; }   /* plads til 3 bogstaver */
-  .ev .tm { font-size: 25px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ev { flex: none; display: grid; grid-template-columns: 82px minmax(0, 1fr); column-gap: 12px; align-items: center; min-height: 36px; }   /* plads til 3 bogstaver */
+  .ev .tm { display: inline-flex; align-items: center; justify-content: center; height: 32px; border-radius: 8px; background: rgba(239, 235, 228, 0.12);
+    font-size: 22px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ev .tm.pill { color: #1B1A18; }   /* klokkeslæt i personens farve */
+  .ev .x .fork { display: inline-flex; vertical-align: -3px; margin-right: 8px; color: var(--muted); }
+  .legend { flex: 1; display: flex; justify-content: center; gap: 8px; }
+  .legend span { padding: 2px 12px; border-radius: 8px; font-size: 18px; font-weight: 700; color: #1B1A18; line-height: 1.3; }
+  .day.today .dwi { flex: none; }
   .ev .ic { display: flex; gap: 4px; }
   .ev .ic .who:nth-child(2):nth-last-child(2), .ev .ic .who:nth-child(3) { margin-left: -12px; box-shadow: 0 0 0 2px #22201D; }   /* sjældent 3 personer: bogstaverne lægger sig lidt ind over hinanden */
   .ev .who { flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
@@ -681,7 +687,7 @@ function weekdayOf(d) {
 // Hvem aftalen gælder: Mor, Far, Lasse og Emil fjernes fra teksten, hvor de end står, og vises som farvede bogstaver.
 // 'og', '+', '&', ',' og '/' mellem navnene fjernes også. 'PRO' først i titlen giver Mors bogstav (PRO bliver stående).
 // 'Far og Emil: Svømning' → (F)(E) Svømning · 'Kør Emil og Lasse til svømning' → (E)(L) Kør til svømning · uden navn: som den er.
-var PERSON_COLORS = { Mor: '#E25555', Far: '#4A8FE0', Lasse: '#45B067', Emil: '#F28C28' };
+var PERSON_COLORS = { Mor: '#E25555', Far: '#4A8FE0', Lasse: '#45B067', Emil: '#E9C23C' }, DINNER_COLOR = '#C9B79F';   // Emil: gul · aftensmad: neutral sandfarve
 function whoOf(ev) {
   var t = String(ev.title).trim(), names = Object.keys(PERSON_COLORS), found = [];
   var NAME = '(?:' + names.join('|') + ')', B1 = '(?<![\\wæøåÆØÅ])', B2 = '(?![\\wæøåÆØÅ])';
@@ -721,6 +727,11 @@ function renderCalendar() {
     dl.appendChild(el('div', 'nm', i === 0 ? 'I DAG' : WD3[weekdayOf(d)]));
     dl.appendChild(el('div', 'num', parseInt(key.slice(8), 10) + '/' + parseInt(key.slice(5, 7), 10)));   // fx 5/11
     head.appendChild(dl);
+    if (i === 0) {   // I DAG: hvem der har hvilken farve – centreret mellem datoen og vejret
+      var lg = el('div', 'legend');
+      Object.keys(PERSON_COLORS).forEach(function (n) { var p = el('span', null, n); p.style.background = PERSON_COLORS[n]; lg.appendChild(p); });
+      head.appendChild(lg);
+    }
     var w = WEATHER && WEATHER[key];
     if (w) {   // vejr i overskriften: ikon og kun højeste temperatur
       var dwi = el('div', 'dwi');
@@ -736,12 +747,19 @@ function renderCalendar() {
     evs.forEach(function (ev) {
       var e = el('div', 'ev' + (isDinner(ev) ? ' dinner' : '') + (i === 0 && !ev.allDay && (ev.end || ev.start + 3600000) <= now.getTime() ? ' past' : ''));
       var dinner = isDinner(ev), who = dinner ? null : whoOf(ev);
-      e.appendChild(el('span', 'tm', ev.allDay ? '' : hhmm(new Date(ev.start))));   // 1. klokkeslæt
-      var ic = el('span', 'ic');                                                     // 2. bogstaver / bestik
-      if (dinner) { var b0 = el('span', 'who'); b0.innerHTML = svg('utensils', 18, '#1B1A18', 2.4); ic.appendChild(b0); }
-      else if (who) who.names.forEach(function (n) { var b = el('span', 'who', n.charAt(0)); b.style.background = PERSON_COLORS[n]; ic.appendChild(b); });
-      e.appendChild(ic);
-      e.appendChild(el('span', 'x', who ? (who.rest || '') : ev.title));             // 3. hvad det er
+      // 1. klokkeslæt i personens farve (flere personer: delt i deres farver · aftensmad: sandfarve · ingen person: grå)
+      var tm = el('span', 'tm', ev.allDay ? 'Hele' : hhmm(new Date(ev.start)));
+      var cols = dinner ? [DINNER_COLOR] : (who ? who.names.map(function (n) { return PERSON_COLORS[n]; }) : []);
+      if (cols.length) {
+        tm.classList.add('pill');
+        tm.style.background = cols.length === 1 ? cols[0] : 'linear-gradient(90deg,' + cols.map(function (c, j) {
+          return c + ' ' + (j * 100 / cols.length) + '% ' + ((j + 1) * 100 / cols.length) + '%';
+        }).join(',') + ')';
+      }
+      e.appendChild(tm);
+      var x = el('span', 'x', who ? (who.rest || '') : ev.title);
+      if (dinner) { var fk = el('span', 'fork'); fk.innerHTML = svg('utensils', 24, 'currentColor', 2.2); x.insertBefore(fk, x.firstChild); }   // aftensmad: lille bestik foran retten
+      e.appendChild(x);             // 3. hvad det er
       col.appendChild(e);
       if (i === 0 && !ev.allDay && ev.start <= now.getTime()) nowAfter = e;   // NU-linjen kommer efter den seneste aftale, der er gået i gang
     });
