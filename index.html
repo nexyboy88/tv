@@ -50,21 +50,25 @@
   .glow { display: none; }   /* ingen brun kant rundt om skærmen – mere plads til indholdet */
 
   /* ===== Øverst: 6 dage som kort – i dag, i morgen, i overmorgen øverst og de næste 3 under ===== */
-  #top { position: absolute; left: 16px; right: 16px; top: 14px; height: 648px; }
-  #week { height: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); column-gap: 14px; row-gap: 22px; }
-  .day { display: flex; flex-direction: column; gap: 6px; padding: 12px 22px; min-width: 0; min-height: 0; overflow: hidden;
+  #top { position: absolute; left: 16px; right: 16px; top: 14px; height: 633px; }
+  #week { height: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 376px 235px; column-gap: 10px; row-gap: 14px; }   /* øverste 3 dage 20 % højere, nederste 25 % lavere */
+  .day { display: flex; flex-direction: column; gap: 2px; padding: 12px 22px; min-width: 0; min-height: 0; overflow: hidden;
     border-radius: var(--r); background: rgba(239, 235, 228, 0.07); }   /* de 3 øverste dage (også i dag) */
   #week > .day:nth-child(n+4) { background: rgba(239, 235, 228, 0.018); }   /* de 3 nederste dage lidt mørkere */
+  #week > .day:nth-child(n+4) { gap: 2px; padding-top: 10px; padding-bottom: 8px; }   /* de nederste kort er lavere – lidt tættere, så der er plads til 3–4 aftaler */
+  #week > .day:nth-child(n+4) .dh { padding-bottom: 6px; margin-bottom: 4px; }
+  #week > .day:nth-child(n+4) .dh .nm { font-size: 29px; }
+  #week > .day:nth-child(n+4) .ev { min-height: 34px; }
   .dh { display: flex; align-items: center; gap: 12px; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px solid rgba(239, 235, 228, 0.12); flex: none; }
   .dl { display: flex; align-items: baseline; gap: 10px; min-width: 0; }   /* ugedag og dato på samme linje */
-  .dh .nm { font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: 0.02em; color: var(--text); white-space: nowrap; }
-  .dh .num { font-size: 25px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .dh .nm { font-size: 32px; font-weight: 800; line-height: 1; letter-spacing: 0.02em; color: var(--text); white-space: nowrap; }
+  .dh .num { font-size: 20px; font-weight: 600; color: var(--muted); white-space: nowrap; }
   .dwi { flex: 1; display: flex; justify-content: flex-end; align-items: center; }
   .dwi svg { flex: none; display: block; }
   .tt { display: flex; align-items: center; line-height: 1; white-space: nowrap; }
-  .tt b { font-size: 36px; font-weight: 700; }
+  .tt b { font-size: 29px; font-weight: 700; }
   /* Én linje pr. aftale i 3 faste kolonner: klokkeslæt · bogstaver · tekst */
-  .ev { flex: none; display: grid; grid-template-columns: 76px 98px minmax(0, 1fr); column-gap: 6px; align-items: center; min-height: 40px; }   /* plads til 3 bogstaver */
+  .ev { flex: none; display: grid; grid-template-columns: 76px 98px minmax(0, 1fr); column-gap: 6px; align-items: center; min-height: 36px; }   /* plads til 3 bogstaver */
   .ev .tm { font-size: 25px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .ev .ic { display: flex; gap: 4px; }
   .ev .who { flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
@@ -80,14 +84,14 @@
   .more, .empty { font-size: 22px; font-weight: 700; color: var(--muted); flex: none; }
 
   /* ===== Båndet: ur · vits · citat · vidste du – i samme kolonner som dagene ===== */
-  #band { position: absolute; left: 0; right: 0; top: 676px; height: 108px; background: rgba(var(--wood), 0.16); }
+  #band { position: absolute; left: 0; right: 0; top: 661px; height: 100px; background: rgba(var(--wood), 0.16); }
   .seg { min-width: 0; padding: 6px 14px 5px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
   .seg:first-child { padding-left: 0; }
   .seg.c2 { grid-column: span 2; justify-content: center; }   /* overskrift + tekst samlet centreret i højden */
   .seg.clk { position: absolute; left: 38px; top: 0; bottom: 0; justify-content: center; overflow: visible; padding: 0; }   /* uret flugter med dagenes tekst */
   .seg.clk + .seg { padding-left: 30px; }   /* lidt luft til det store ur */
   .seg:last-child { padding-right: 0; }
-  #clock { font-size: 92px; font-weight: 300; line-height: 1; letter-spacing: -4px; text-align: center; transform: translateY(-4px); }   /* tal har ingen underlængder – løftes en anelse */
+  #clock { font-size: 88px; font-weight: 300; line-height: 1; letter-spacing: -4px; text-align: center; transform: translateY(-4px); }   /* tal har ingen underlængder – løftes en anelse */
   .sh2 { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--accent); flex: none; }
   .sh2 .label { color: var(--accent); font-size: 19px; }
   .txt { flex: 0 1 auto; min-height: 0; text-align: center; font-size: 24px; font-weight: 500; line-height: 1.12; overflow: hidden; transition: opacity 0.6s; }
@@ -107,7 +111,7 @@
   .txt .who { color: var(--muted); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* ===== Bunden: 3 familiebilleder fra Google Fotos ===== */
-  #bottom { position: absolute; left: 16px; right: 16px; top: 798px; bottom: 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  #bottom { position: absolute; left: 16px; right: 16px; top: 775px; bottom: 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   .cellb { min-width: 0; min-height: 0; display: flex; }
   .cellb .frame { flex: 1; }
   /* Vejret i dag i 2 tidsrum – i baren helt til højre */
@@ -708,7 +712,7 @@ function renderCalendar() {
     var w = WEATHER && WEATHER[key];
     if (w) {   // vejr i overskriften: ikon og kun højeste temperatur
       var dwi = el('div', 'dwi');
-      dwi.innerHTML = svg(w.icon, 40, ICON_COLORS[w.icon] || 'currentColor', 1.9);
+      dwi.innerHTML = svg(w.icon, 32, ICON_COLORS[w.icon] || 'currentColor', 2);
       var tt = el('div', 'tt');
       tt.appendChild(el('b', null, w.max + '°'));
       head.appendChild(dwi); head.appendChild(tt);
