@@ -68,9 +68,10 @@
   .tt { display: flex; align-items: center; line-height: 1; white-space: nowrap; }
   .tt b { font-size: 29px; font-weight: 700; }
   /* Én linje pr. aftale i 3 faste kolonner: klokkeslæt · bogstaver · tekst */
-  .ev { flex: none; display: grid; grid-template-columns: 76px 98px minmax(0, 1fr); column-gap: 6px; align-items: center; min-height: 36px; }   /* plads til 3 bogstaver */
+  .ev { flex: none; display: grid; grid-template-columns: 76px 68px minmax(0, 1fr); column-gap: 12px; align-items: center; min-height: 36px; }   /* plads til 3 bogstaver */
   .ev .tm { font-size: 25px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .ev .ic { display: flex; gap: 4px; }
+  .ev .ic .who:nth-child(2):nth-last-child(2), .ev .ic .who:nth-child(3) { margin-left: -12px; box-shadow: 0 0 0 2px #22201D; }   /* sjældent 3 personer: bogstaverne lægger sig lidt ind over hinanden */
   .ev .who { flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     font-size: 17px; font-weight: 800; color: #1B1A18; letter-spacing: 0; }
   .ev .x { font-size: 30px; font-weight: 700; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -91,7 +92,7 @@
   .seg.clk { position: absolute; left: 38px; top: 0; bottom: 0; justify-content: center; overflow: visible; padding: 0; }   /* uret flugter med dagenes tekst */
   .seg.clk + .seg { padding-left: 30px; }   /* lidt luft til det store ur */
   .seg:last-child { padding-right: 0; }
-  #clock { font-size: 88px; font-weight: 300; line-height: 1; letter-spacing: -4px; text-align: center; transform: translateY(-4px); }   /* tal har ingen underlængder – løftes en anelse */
+  #clock { font-size: 84px; font-weight: 600; line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; text-align: center; transform: translateY(-4px); }   /* tal har ingen underlængder – løftes en anelse */
   .sh2 { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--accent); flex: none; }
   .sh2 .label { color: var(--accent); font-size: 19px; }
   .txt { flex: 0 1 auto; min-height: 0; text-align: center; font-size: 24px; font-weight: 500; line-height: 1.12; overflow: hidden; transition: opacity 0.6s; }
@@ -100,10 +101,11 @@
   /* Båndet: én ting ad gangen – 5 slags indslag skifter hvert 10. minut, samme indslag hele dagen */
   .seg.one { position: absolute; top: 0; bottom: 0; left: 50%; width: 1000px; margin-left: -500px; align-items: center; justify-content: center; gap: 4px; padding: 0; text-align: center; transition: opacity 0.6s; }
   .seg.one.fade { opacity: 0; }
-  .seg.one .txt { font-size: 34px; font-weight: 300; line-height: 1.15; flex: none; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: none; }   /* altid én linje */
+  .seg.one .txt { font-size: 32px; font-weight: 600; line-height: 1.15; flex: none; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: none; }   /* altid én linje */
   .seg.one .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; font-size: 18px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; flex: none; }
   .seg.one .sub.joke { font-size: 24px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--accent); }
   .seg.one .sub:empty { display: none; }
+  /* hele baren bruger samme skrift og tykkelse (600) som aktiviteterne */
   .seg.one .lb { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; flex: none; }
   .seg.one .dots { display: flex; gap: 8px; margin-left: 14px; }
   .seg.one .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); opacity: 0.35; }
@@ -117,8 +119,8 @@
   /* Vejret i dag i 2 tidsrum – i baren helt til højre */
   .wx { position: absolute; right: 38px; top: 0; bottom: 0; display: flex; align-items: center; gap: 40px; }
   .wx .slot { display: flex; flex-direction: column; align-items: center; gap: 2px; transition: opacity 2s; }
-  .wx .h { font-size: 26px; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; white-space: nowrap; }
-  .wx .r { display: flex; align-items: center; gap: 10px; font-size: 42px; font-weight: 700; line-height: 1; }
+  .wx .h { font-size: 24px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; white-space: nowrap; }
+  .wx .r { display: flex; align-items: center; gap: 10px; font-size: 40px; font-weight: 600; line-height: 1; }
   .wx .slot.past { opacity: 0.35; }   /* tidsrum, der er overstået */
   .wx .slot.cur .h { color: var(--accent); }   /* tidsrummet lige nu */
   .wr { flex: 1; display: flex; align-items: center; border-top: 1px solid var(--line); }
