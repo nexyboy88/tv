@@ -50,8 +50,8 @@
   .glow { display: none; }   /* ingen brun kant rundt om skærmen – mere plads til indholdet */
 
   /* ===== Øverst: 6 dage som kort – i dag, i morgen, i overmorgen øverst og de næste 3 under ===== */
-  #top { position: absolute; left: 16px; right: 16px; top: 14px; height: 633px; }
-  #week { height: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 376px 235px; column-gap: 10px; row-gap: 14px; }   /* øverste 3 dage 20 % højere, nederste 25 % lavere */
+  #top { position: absolute; left: 16px; right: 16px; top: 14px; height: 595px; }
+  #week { height: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 376px 205px; column-gap: 10px; row-gap: 14px; }   /* øverste 3 dage 20 % højere, nederste 25 % lavere */
   .day { display: flex; flex-direction: column; gap: 2px; padding: 12px 22px; min-width: 0; min-height: 0; overflow: hidden;
     border-radius: var(--r); background: rgba(239, 235, 228, 0.07); }   /* de 3 øverste dage (også i dag) */
   #week > .day:nth-child(n+4) { background: rgba(239, 235, 228, 0.018); }   /* de 3 nederste dage lidt mørkere */
@@ -68,7 +68,7 @@
   .tt { display: flex; align-items: center; line-height: 1; white-space: nowrap; }
   .tt b { font-size: 29px; font-weight: 700; }
   /* Én linje pr. aftale i 3 faste kolonner: klokkeslæt · bogstaver · tekst */
-  .ev { flex: none; display: grid; grid-template-columns: 76px 68px minmax(0, 1fr); column-gap: 12px; align-items: center; min-height: 36px; }   /* plads til 3 bogstaver */
+  .ev { flex: none; display: grid; grid-template-columns: 76px 68px minmax(0, 1fr); column-gap: 5px; align-items: center; min-height: 36px; }   /* plads til 3 bogstaver */
   .ev .tm { font-size: 25px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .ev .ic { display: flex; gap: 4px; }
   .ev .ic .who:nth-child(2):nth-last-child(2), .ev .ic .who:nth-child(3) { margin-left: -12px; box-shadow: 0 0 0 2px #22201D; }   /* sjældent 3 personer: bogstaverne lægger sig lidt ind over hinanden */
@@ -85,7 +85,7 @@
   .more, .empty { font-size: 22px; font-weight: 700; color: var(--muted); flex: none; }
 
   /* ===== Båndet: ur · vits · citat · vidste du – i samme kolonner som dagene ===== */
-  #band { position: absolute; left: 0; right: 0; top: 661px; height: 100px; background: rgba(var(--wood), 0.16); }
+  #band { position: absolute; left: 0; right: 0; top: 623px; height: 92px; background: rgba(var(--wood), 0.16); }
   .seg { min-width: 0; padding: 6px 14px 5px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
   .seg:first-child { padding-left: 0; }
   .seg.c2 { grid-column: span 2; justify-content: center; }   /* overskrift + tekst samlet centreret i højden */
@@ -98,13 +98,23 @@
   .txt { flex: 0 1 auto; min-height: 0; text-align: center; font-size: 24px; font-weight: 500; line-height: 1.12; overflow: hidden; transition: opacity 0.6s; }
   .txt.fade { opacity: 0; }
   .txt .a { color: var(--muted); }
-  /* Båndet: én ting ad gangen – 5 slags indslag skifter hvert 10. minut, samme indslag hele dagen */
-  .seg.one { position: absolute; top: 0; bottom: 0; left: 50%; width: 1000px; margin-left: -500px; align-items: center; justify-content: center; gap: 4px; padding: 0; text-align: center; transition: opacity 0.6s; }
-  .seg.one.fade { opacity: 0; }
-  .seg.one .txt { font-size: 32px; font-weight: 600; line-height: 1.15; flex: none; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: none; }   /* altid én linje */
-  .seg.one .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; font-size: 18px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; flex: none; }
-  .seg.one .sub.joke { font-size: 24px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--accent); }
+  /* Båndet: én ting ad gangen – 5 slags indslag skifter hver halve time, samme indslag hele dagen */
+  .seg.one { position: absolute; top: 0; bottom: 0; left: 50%; width: 1180px; margin-left: -590px; align-items: center; justify-content: center; gap: 4px; padding: 0; text-align: center; transition: opacity 1.2s ease, transform 1.2s ease; }
+  .seg.one.fade { opacity: 0; transform: translateY(6px); }   /* blødt skift: fader ud og glider en anelse */
+  .seg.one .txt { font-size: 41px; font-weight: 600; line-height: 1.1; flex: none; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: none; }   /* altid én linje */
+  .seg.one .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; font-size: 23px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; flex: none; }
+  .seg.one .sub.joke { font-size: 31px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--accent); }
   .seg.one .sub:empty { display: none; }
+  /* Båndet: rundt ikon til venstre, og overskrift, tekst og pointe venstrestillet ved siden af */
+  .seg.one { flex-direction: row !important; justify-content: center; gap: 22px; }
+  .seg.one .ic2 { flex: none; width: 66px; height: 66px; border-radius: 50%; background: rgba(var(--wood), 0.35); display: flex; align-items: center; justify-content: center; color: var(--accent); }
+  .seg.one .col { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; max-width: 1080px; }   /* kun 2 linjer, centreret */
+  .seg.one .col .txt, .seg.one .col .sub { text-align: center; }
+  .seg.one .col .lb { display: none; }   /* ingen overskrift – ikonet viser typen */
+  .seg.one.long .col .sub { display: none; }
+  .seg.one.long .col .txt { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.15; }
+  .seg.one .txt .by { color: var(--muted); }
+  .seg.one .col .sub { line-height: 1.1; }
   /* hele baren bruger samme skrift og tykkelse (600) som aktiviteterne */
   .seg.one .lb { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; flex: none; }
   .seg.one .dots { display: flex; gap: 8px; margin-left: 14px; }
@@ -113,7 +123,7 @@
   .txt .who { color: var(--muted); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* ===== Bunden: 3 familiebilleder fra Google Fotos ===== */
-  #bottom { position: absolute; left: 16px; right: 16px; top: 775px; bottom: 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  #bottom { position: absolute; left: 16px; right: 16px; top: 729px; bottom: 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   .cellb { min-width: 0; min-height: 0; display: flex; }
   .cellb .frame { flex: 1; }
   /* Vejret i dag i 2 tidsrum – i baren helt til højre */
@@ -200,7 +210,7 @@
     <div class="seg clk">
       <div id="clock">--:--</div>
     </div>
-    <div class="seg one"><div class="lb"><span class="ico" id="i0"></span><span id="l0"></span><span class="dots" id="dots"></span></div><div class="txt" id="t0"></div><div class="sub" id="s0"></div></div>
+    <div class="seg one"><div class="ic2" id="i0"></div><div class="col"><div class="lb"><span id="l0"></span><span class="dots" id="dots"></span></div><div class="txt" id="t0"></div><div class="sub" id="s0"></div></div></div>
     <div class="wx" id="wxrows"></div>
   </div>
 
@@ -237,8 +247,8 @@ try { if (KEY) localStorage.setItem('fs_key', KEY); } catch (e) {}
 var URL_TOKEN = QS.get('t') || '';
 var LAT = 55.49, LON = 9.47;          // Kolding
 var PHOTO_SECONDS = 120;             // alle tre billeder skifter samtidig hvert 2. minut (fade 5 sek., zoom 10 sek.)
-var STRIP_SECONDS = 60;               // båndet tjekker hvert minut og skifter hvert 10. minut mellem de 5 slags indslag
-var STRIP_MINUTES = 10;               // hvor længe hvert indslag står (samme vits, citat osv. hele dagen – nye ved midnat)
+var STRIP_SECONDS = 60;               // båndet tjekker hvert minut og skifter hver halve time mellem de 5 slags indslag
+var STRIP_MINUTES = 30;               // hvor længe hvert indslag står (samme vits, citat osv. hele dagen – nye ved midnat)
 // Sort skærm om natten. days = de aftener, det gælder fra (0 = søndag … 6 = lørdag). '24:00' = fra midnat.
 var NIGHT = [
   { days: [0, 1, 2, 3, 4], from: '22:00', to: '06:00' },   // søndag–torsdag aften: sort 22–06
@@ -868,12 +878,22 @@ function renderStrip() {
     q.textContent = v.text; sub.textContent = v.desc || '';
   }
   $('l0').textContent = lab;
-  $('i0').innerHTML = svg(STRIP_KINDS[key].icon, 22, 'currentColor', 2);
+  $('i0').innerHTML = svg(STRIP_KINDS[key].icon, 33, 'currentColor', 2);
   var dots = $('dots'); dots.innerHTML = '';
   kinds.forEach(function (k, i) { dots.appendChild(el('i', i === n ? 'on' : null)); });
   // samme stil hver gang – teksten skal være på én linje og bliver kun mindre, hvis den ikke kan være der
-  var fs = 34; q.style.fontSize = fs + 'px';
-  while (q.scrollWidth > q.clientWidth + 1 && fs > 20) { fs -= 1; q.style.fontSize = fs + 'px'; }
+  // altid 2 linjer: teksten gøres mindre (ned til 28 px), indtil den kan være på én linje.
+  // Er den stadig for lang, fylder teksten begge linjer, og linje 2 (fx hvem der har sagt det) sættes bag på.
+  seg.classList.remove('long');
+  var fs = 41; q.style.fontSize = fs + 'px';
+  while (q.scrollWidth > q.clientWidth + 1 && fs > 28) { fs -= 1; q.style.fontSize = fs + 'px'; }
+  if (q.scrollWidth > q.clientWidth + 1) {
+    seg.classList.add('long'); q.style.fontSize = '30px';
+    if (sub.textContent) q.appendChild(el('span', 'by', ' – ' + sub.textContent));
+  }
+  sub.style.fontSize = '';   // linje 2 gøres også mindre, hvis den er for lang
+  var ss = parseFloat(getComputedStyle(sub).fontSize);
+  while (sub.scrollWidth > sub.clientWidth + 1 && ss > 18) { ss -= 1; sub.style.fontSize = ss + 'px'; }
 }
 function nextStrip() {
   if (document.body.classList.contains('night')) return;
@@ -882,7 +902,7 @@ function nextStrip() {
   stripStep = slot;
   var seg = document.querySelector('.seg.one');
   seg.classList.add('fade');
-  setTimeout(function () { renderStrip(); seg.classList.remove('fade'); }, 600);
+  setTimeout(function () { renderStrip(); seg.classList.remove('fade'); }, 1200);
 }
 function loadExtras() {   // én gang i døgnet (serveren gemmer dagens indslag)
   if (EXTRAS && EXTRAS.date === dayKey(new Date())) return;
