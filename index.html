@@ -224,7 +224,7 @@
 /* ===== Indstillinger ===== */
 /* ===== Adresse til Apps Script (data og adgang) =====
  * Indsæt din Apps Script-adresse (den, der slutter på /exec) mellem anførselstegnene. */
-var API = 'INDSÆT-DIN-APPS-SCRIPT-ADRESSE-HER';
+var API = 'https://script.google.com/macros/s/AKfycbygCo2Wc5WCNT6ab9fO5DvyQwtqq48vngrlGhoupX1DaT6JVp6QT2rZqZp4Q3h2RYMqbw/exec';
 var QS = new URLSearchParams(location.search);
 var KEY = QS.get('k') || (function () { try { return localStorage.getItem('fs_key') || ''; } catch (e) { return ''; } })();
 try { if (KEY) localStorage.setItem('fs_key', KEY); } catch (e) {}
