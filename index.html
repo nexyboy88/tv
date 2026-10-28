@@ -107,7 +107,7 @@
   /* Båndet: én ting ad gangen – 5 slags indslag skifter hver halve time, samme indslag hele dagen */
   .seg.one { position: absolute; top: 0; bottom: 0; left: 50%; width: 1180px; margin-left: -590px; align-items: center; justify-content: center; gap: 4px; padding: 0; text-align: center; transition: opacity 1.2s ease, transform 1.2s ease; }
   .seg.one.fade { opacity: 0; transform: translateY(6px); }   /* blødt skift: fader ud og glider en anelse */
-  .seg.one .txt { font-size: 41px; font-weight: 600; line-height: 1.1; flex: none; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: none; }   /* altid én linje */
+  .seg.one .txt { font-size: 33px; font-weight: 600; line-height: 1.1; flex: none; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: none; }   /* altid én linje */
   .seg.one .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; font-size: 23px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; flex: none; }
   .seg.one .sub.joke { font-size: 31px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--accent); }
   .seg.one .sub:empty { display: none; }
@@ -900,13 +900,13 @@ function renderStrip() {
   var dots = $('dots'); dots.innerHTML = '';
   kinds.forEach(function (k, i) { dots.appendChild(el('i', i === n ? 'on' : null)); });
   // samme stil hver gang – teksten skal være på én linje og bliver kun mindre, hvis den ikke kan være der
-  // altid 2 linjer: teksten gøres mindre (ned til 28 px), indtil den kan være på én linje.
+  // altid 2 linjer: teksten gøres mindre (ned til 25 px), indtil den kan være på én linje.
   // Er den stadig for lang, fylder teksten begge linjer, og linje 2 (fx hvem der har sagt det) sættes bag på.
   seg.classList.remove('long');
-  var fs = 41; q.style.fontSize = fs + 'px';
-  while (q.scrollWidth > q.clientWidth + 1 && fs > 28) { fs -= 1; q.style.fontSize = fs + 'px'; }
+  var fs = 33; q.style.fontSize = fs + 'px';
+  while (q.scrollWidth > q.clientWidth + 1 && fs > 25) { fs -= 1; q.style.fontSize = fs + 'px'; }
   if (q.scrollWidth > q.clientWidth + 1) {
-    seg.classList.add('long'); q.style.fontSize = '30px';
+    seg.classList.add('long'); q.style.fontSize = '27px';
     if (sub.textContent) q.appendChild(el('span', 'by', ' – ' + sub.textContent));
   }
   sub.style.fontSize = '';   // linje 2 gøres også mindre, hvis den er for lang
