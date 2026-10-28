@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@200;300;400;500;600;700&display=swap">
+<style>
+  /* ===== Nordisk mørkt tema (lyst tema kan vælges med THEME) ===== */
+  :root { --wood: 164, 122, 78; --r: 14px; --r-sm: 8px; }   /* samme runde hjørner overalt */
+  body.dark {
+    --bg: #1B1A18; --chip: rgba(239, 235, 228, 0.07); --line: rgba(239, 235, 228, 0.10); --text: #EFEBE4; --soft: #CFC9C0;
+    --muted: #A39D94; --accent: #D2AE80; --green: #9CC7A3; --shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+  }
+  body.light {
+    --bg: #ECE7DF; --chip: rgba(38, 36, 31, 0.05); --line: rgba(38, 36, 31, 0.10); --text: #26241F; --soft: #48443D;
+    --muted: #6B655C; --accent: #8C6239; --green: #3F7A4C; --shadow: 0 10px 30px rgba(38, 36, 31, 0.10);
+  }
+  /* Sæsontemaer – lægger sig oven på det mørke tema */
+  body.s-halloween   { --bg: #17131A; --accent: #EE9445; --line: rgba(238, 148, 69, 0.16);  --wood: 238, 148, 69; }
+  body.s-jul         { --bg: #111814; --accent: #E2B969; --line: rgba(226, 185, 105, 0.14); --wood: 200, 70, 60; }
+  body.s-nytaar      { --bg: #13141B; --accent: #E8C77E; --line: rgba(232, 199, 126, 0.14); --wood: 232, 199, 126; }
+  body.s-paaske      { --bg: #16170F; --accent: #E7CB5F; --line: rgba(231, 203, 95, 0.14);  --wood: 160, 190, 110; }
+  body.s-fastelavn   { --accent: #E9A9C9; --line: rgba(233, 169, 201, 0.14); --wood: 233, 169, 201; }
+  body.s-fodselsdag  { --accent: #F0B85A; --line: rgba(217, 72, 74, 0.20);   --wood: 217, 72, 74; }
+  body.s-sankthans   { --bg: #19140F; --accent: #F2A04A; --line: rgba(242, 160, 74, 0.15);  --wood: 242, 160, 74; }
+  body.s-sommerferie { --bg: #15170F; --accent: #F2C858; --line: rgba(242, 200, 88, 0.14);  --wood: 242, 200, 88; }
+  body.s-skolestart  { --accent: #8FB8E8; --line: rgba(143, 184, 232, 0.16); --wood: 143, 184, 232; }
+
+  html, body { margin: 0; height: 100%; background: #1B1A18; overflow: hidden; cursor: none; }
+  body { background: var(--bg, #1B1A18); }   /* samme farve som skærmen helt ud i kanten */
+  #stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; overflow: hidden;
+    background: var(--bg); color: var(--text); font-family: 'Albert Sans', system-ui, sans-serif;
+    font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+  /* I dag-kolonnen: samme farve som båndet fra top til bund (i to stykker, så båndet ikke bliver dobbelt farvet) */
+  .colbg { position: absolute; left: 0; width: 280px; background: rgba(var(--wood), 0.16); }
+  .label { font-size: 14px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  .ico { display: flex; flex: none; }
+
+  /* Sæsonpynt og ramme */
+  #fx, #deco { position: absolute; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none; }
+  #deco { z-index: 4; }
+  /* Rolig zone i venstre kolonne (I DAG øverst, vejret nederst): pynt og animation er kun svagt synlige dér */
+  #deco svg { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
+  #deco .tw { animation: tw 2.6s ease-in-out infinite; }
+  @keyframes tw { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  #deco .spider { animation: bob 7s ease-in-out infinite; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(14px); } }
+  #deco .hop { animation: hop 3s ease-in-out infinite; transform-box: fill-box; }
+  @keyframes hop { 0%, 80%, 100% { transform: translateY(0); } 90% { transform: translateY(-6px); } }
+  .glow { display: none; }   /* ingen brun kant rundt om skærmen – mere plads til indholdet */
+
+  /* ===== Øverst: 6 dage som kort – i dag, i morgen, i overmorgen øverst og de næste 3 under ===== */
+  #top { position: absolute; left: 16px; right: 16px; top: 14px; height: 648px; }
+  #week { height: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); column-gap: 14px; row-gap: 22px; }
+  .day { display: flex; flex-direction: column; gap: 6px; padding: 12px 22px; min-width: 0; min-height: 0; overflow: hidden;
+    border-radius: var(--r); background: rgba(239, 235, 228, 0.07); }   /* de 3 øverste dage (også i dag) */
+  #week > .day:nth-child(n+4) { background: rgba(239, 235, 228, 0.018); }   /* de 3 nederste dage lidt mørkere */
+  .dh { display: flex; align-items: center; gap: 12px; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px solid rgba(239, 235, 228, 0.12); flex: none; }
+  .dl { display: flex; align-items: baseline; gap: 10px; min-width: 0; }   /* ugedag og dato på samme linje */
+  .dh .nm { font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: 0.02em; color: var(--text); white-space: nowrap; }
+  .dh .num { font-size: 25px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .dwi { flex: 1; display: flex; justify-content: flex-end; align-items: center; }
+  .dwi svg { flex: none; display: block; }
+  .tt { display: flex; align-items: center; line-height: 1; white-space: nowrap; }
+  .tt b { font-size: 36px; font-weight: 700; }
+  /* Én linje pr. aftale i 3 faste kolonner: klokkeslæt · bogstaver · tekst */
+  .ev { flex: none; display: grid; grid-template-columns: 76px 98px minmax(0, 1fr); column-gap: 6px; align-items: center; min-height: 40px; }   /* plads til 3 bogstaver */
+  .ev .tm { font-size: 25px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ev .ic { display: flex; gap: 4px; }
+  .ev .who { flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 800; color: #1B1A18; letter-spacing: 0; }
+  .ev .x { font-size: 30px; font-weight: 700; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ev.past { opacity: 0.4; }   /* aftaler, der er slut */
+  /* NU-linjen i I DAG: står mellem det, der er sket, og det, der kommer – flytter sig i løbet af dagen */
+  .nowline { flex: none; display: flex; align-items: center; gap: 10px; margin: 2px 0; color: var(--accent); font-size: 16px; font-weight: 800; letter-spacing: 0.18em; }
+  .nowline::after { content: ''; flex: 1; height: 2px; border-radius: 2px; background: var(--accent); opacity: 0.8; }
+  .ev.dinner .who { background: #E6C34A; }   /* aftensmad: bestik-ikon i madfarve */
+  .day.free .dh { opacity: 0.42; }   /* dage uden aftaler nedtones */
+  .day.free::after { content: 'Ingen aftaler'; font-size: 22px; font-weight: 600; color: var(--muted); opacity: 0.45; }
+  .more, .empty { font-size: 22px; font-weight: 700; color: var(--muted); flex: none; }
+
+  /* ===== Båndet: ur · vits · citat · vidste du – i samme kolonner som dagene ===== */
+  #band { position: absolute; left: 0; right: 0; top: 676px; height: 108px; background: rgba(var(--wood), 0.16); }
+  .seg { min-width: 0; padding: 6px 14px 5px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
+  .seg:first-child { padding-left: 0; }
+  .seg.c2 { grid-column: span 2; justify-content: center; }   /* overskrift + tekst samlet centreret i højden */
+  .seg.clk { position: absolute; left: 38px; top: 0; bottom: 0; justify-content: center; overflow: visible; padding: 0; }   /* uret flugter med dagenes tekst */
+  .seg.clk + .seg { padding-left: 30px; }   /* lidt luft til det store ur */
+  .seg:last-child { padding-right: 0; }
+  #clock { font-size: 92px; font-weight: 300; line-height: 1; letter-spacing: -4px; text-align: center; transform: translateY(-4px); }   /* tal har ingen underlængder – løftes en anelse */
+  .sh2 { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--accent); flex: none; }
+  .sh2 .label { color: var(--accent); font-size: 19px; }
+  .txt { flex: 0 1 auto; min-height: 0; text-align: center; font-size: 24px; font-weight: 500; line-height: 1.12; overflow: hidden; transition: opacity 0.6s; }
+  .txt.fade { opacity: 0; }
+  .txt .a { color: var(--muted); }
+  /* Båndet: én ting ad gangen – 5 slags indslag skifter hvert 10. minut, samme indslag hele dagen */
+  .seg.one { position: absolute; top: 0; bottom: 0; left: 50%; width: 1000px; margin-left: -500px; align-items: center; justify-content: center; gap: 4px; padding: 0; text-align: center; transition: opacity 0.6s; }
+  .seg.one.fade { opacity: 0; }
+  .seg.one .txt { font-size: 34px; font-weight: 300; line-height: 1.15; flex: none; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: none; }   /* altid én linje */
+  .seg.one .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; font-size: 18px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; flex: none; }
+  .seg.one .sub.joke { font-size: 24px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--accent); }
+  .seg.one .sub:empty { display: none; }
+  .seg.one .lb { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; flex: none; }
+  .seg.one .dots { display: flex; gap: 8px; margin-left: 14px; }
+  .seg.one .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); opacity: 0.35; }
+  .seg.one .dots i.on { background: var(--accent); opacity: 1; }
+  .txt .who { color: var(--muted); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ===== Bunden: 3 familiebilleder fra Google Fotos ===== */
+  #bottom { position: absolute; left: 16px; right: 16px; top: 798px; bottom: 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .cellb { min-width: 0; min-height: 0; display: flex; }
+  .cellb .frame { flex: 1; }
+  /* Vejret i dag i 2 tidsrum – i baren helt til højre */
+  .wx { position: absolute; right: 38px; top: 0; bottom: 0; display: flex; align-items: center; gap: 40px; }
+  .wx .slot { display: flex; flex-direction: column; align-items: center; gap: 2px; transition: opacity 2s; }
+  .wx .h { font-size: 26px; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; white-space: nowrap; }
+  .wx .r { display: flex; align-items: center; gap: 10px; font-size: 42px; font-weight: 700; line-height: 1; }
+  .wx .slot.past { opacity: 0.35; }   /* tidsrum, der er overstået */
+  .wx .slot.cur .h { color: var(--accent); }   /* tidsrummet lige nu */
+  .wr { flex: 1; display: flex; align-items: center; border-top: 1px solid var(--line); }
+  .wr:first-child { border-top: 0; }
+  .wr .wh { font-size: 26px; font-weight: 800; color: var(--soft); white-space: nowrap; }
+  .wr .wi { flex: 1; display: flex; justify-content: center; }   /* ikonet midt mellem klokkeslæt og temperatur */
+  .wr .wtp { display: flex; flex-direction: column; align-items: center; line-height: 1.05; white-space: nowrap; }
+  .wr .wtp b { font-size: 32px; font-weight: 700; }
+  .wr .wtp span { font-size: 15px; font-weight: 600; color: var(--muted); }
+  .frame { position: relative; min-width: 0; min-height: 0; border-radius: var(--r); overflow: hidden; background: #15130F;
+    box-shadow: var(--shadow), 0 0 0 1px var(--line); }
+  .pl { position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: 0; transition: opacity 5s ease-in-out; }
+  .pl.show { opacity: 1; }
+  .pl.zoom .fg { animation: kb 10s ease-out forwards; }   /* langsom zoom ind, når billedet kommer frem */
+  @keyframes kb { from { transform: scale(1); } to { transform: scale(1.06); } }
+  .cbg { position: absolute; top: -30px; right: -30px; bottom: -30px; left: -30px; width: calc(100% + 60px); height: calc(100% + 60px); object-fit: cover; filter: blur(24px) brightness(0.7); }
+  .fg { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
+  .pdate { position: absolute; right: 14px; bottom: 10px; font-size: 17px; font-weight: 600; letter-spacing: 0.04em; color: rgba(255, 255, 255, 0.55);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85); }
+  .pdate:empty { display: none; }
+  /* Skoleskemaer lægger sig oven på to af billederne i de faste tidsrum */
+  .sk { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 3; box-sizing: border-box; padding: 14px 10px 12px; display: flex; flex-direction: column;
+    background: linear-gradient(rgba(var(--wood), 0.10), rgba(var(--wood), 0.10)), var(--bg); opacity: 0; transition: opacity 1s ease-in-out; }
+  body.skema .sk.ready { opacity: 1; }
+  .sk { top: -2px; right: -2px; bottom: -2px; left: -2px; }   /* dækker helt ud i kanten */
+  body.skema #F0 .pl, body.skema #F2 .pl, body.skema #F0 .pdate, body.skema #F2 .pdate { visibility: hidden; transition: visibility 0s 1s; }   /* fotoet under skemaet skjules, så det ikke lyser igennem i kanten */
+  body.skema #F0, body.skema #F2 { box-shadow: var(--shadow); }   /* ingen tynd kantlinje om skemaerne */
+  .sk .sh { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 4px 8px; }
+  .sk .sh .label { color: var(--accent); }
+  .sk .sh .when { display: none; }   /* ingen "I dag/I morgen" – dagen er markeret i skemaet */
+  .sk .sh .when b { color: var(--text); font-weight: 600; }
+  .sk table { flex: 1; width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .sk th { font-size: 17px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+    padding: 4px 2px 6px; text-align: center; border-bottom: 1px solid var(--line); }
+  .sk th.tc { width: 54px; }
+  .sk td { padding: 4px 0; vertical-align: middle; text-align: center; border-bottom: 1px solid var(--line); }
+  .sk tr:last-child td { border-bottom: 0; }
+  .sk td.tc { font-size: 17px; font-weight: 800; color: var(--accent); }
+  .sk .f { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }
+  .sk .f + .f { color: var(--soft); }
+  /* højst 2 linjer pr. time: to fag = én linje hver, ét fag = højst 2 linjer */
+  .sk .f { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .sk td .f:nth-last-child(2), .sk td .f:nth-last-child(2) + .f { -webkit-line-clamp: 1; }
+  .sk .on { background: rgba(var(--wood), 0.18); }
+  .sk th.on { color: var(--accent); border-radius: var(--r-sm) var(--r-sm) 0 0; }
+  .sk tr:last-child td.on { border-radius: 0 0 var(--r-sm) var(--r-sm); }
+
+  /* ===== PIN-parring ===== */
+  #pin { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 10; background: var(--bg); display: none; align-items: center; justify-content: center; cursor: default; }
+  #pin.on { display: flex; }
+  #pin form { display: flex; flex-direction: column; align-items: center; gap: 24px; width: 640px; text-align: center; }
+  #pin h1 { margin: 0; font-size: 48px; font-weight: 600; }
+  #pin p { margin: 0; font-size: 24px; color: var(--soft); }
+  #pin label { position: absolute; left: -9999px; }
+  #pin input { width: 360px; font: inherit; font-size: 56px; letter-spacing: 18px; text-align: center; padding: 14px; border-radius: 16px;
+    border: 2px solid rgba(var(--wood), 0.6); background: var(--chip); color: var(--text); }
+  #pin input:focus { outline: 3px solid var(--accent); outline-offset: 3px; }
+  #pin button { font: inherit; font-size: 28px; font-weight: 700; padding: 16px 48px; border-radius: 999px; border: 0;
+    background: var(--accent); color: var(--bg); cursor: pointer; }
+  #pin button:focus { outline: 3px solid var(--text); outline-offset: 3px; }
+  #pinerr { min-height: 32px; font-size: 24px; color: #C0573F; }
+
+  /* ===== Sort skærm om natten ===== */
+  /* Hele skærmen sort, så TV'et ser slukket ud */
+  #night { position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 2147483647; background: #000; display: none; cursor: none; }
+  /* Skærmen går ikke længere helt i sort om natten – den bliver dæmpet til 80 % (se DIM_NIGHT nederst) */
+</style>
+</head>
+<body class="dark">
+<div id="stage">
+  <canvas id="fx" width="1920" height="1080" aria-hidden="true"></canvas>
+
+
+  <div id="top"><div id="week"></div></div>
+
+  <div id="band">
+    <div class="seg clk">
+      <div id="clock">--:--</div>
+    </div>
+    <div class="seg one"><div class="lb"><span class="ico" id="i0"></span><span id="l0"></span><span class="dots" id="dots"></span></div><div class="txt" id="t0"></div><div class="sub" id="s0"></div></div>
+    <div class="wx" id="wxrows"></div>
+  </div>
+
+  <div id="bottom">
+    <div class="cellb"><div class="frame" id="F0"><div class="pl"><img class="cbg" alt=""><img class="fg" alt="Familiebillede"></div><div class="pl"><img class="cbg" alt=""><img class="fg" alt="Familiebillede"></div><div class="pdate"></div><div class="sk" id="sk1"></div></div></div>
+    <div class="cellb"><div class="frame" id="F1"><div class="pl"><img class="cbg" alt=""><img class="fg" alt="Familiebillede"></div><div class="pl"><img class="cbg" alt=""><img class="fg" alt="Familiebillede"></div><div class="pdate"></div></div></div>
+    <div class="cellb"><div class="frame" id="F2"><div class="pl"><img class="cbg" alt=""><img class="fg" alt="Familiebillede"></div><div class="pl"><img class="cbg" alt=""><img class="fg" alt="Familiebillede"></div><div class="pdate"></div><div class="sk" id="sk2"></div></div></div>
+  </div>
+
+  <div id="deco" aria-hidden="true"></div>
+  <div class="glow"></div>
+
+  <div id="pin">
+    <form id="pinform" autocomplete="off">
+      <h1>Aktivér skærmen</h1>
+      <p>Indtast PIN-koden én gang. Skærmen husker den bagefter.</p>
+      <label for="pininput">PIN-kode</label>
+      <input id="pininput" type="password" inputmode="numeric" maxlength="8" autofocus>
+      <button type="submit">Aktivér</button>
+      <div id="pinerr" role="alert"></div>
+    </form>
+  </div>
+</div>
+<div id="night"></div>
+
+<script>
+/* ===== Indstillinger ===== */
+/* ===== Adresse til Apps Script (data og adgang) =====
+ * Indsæt din Apps Script-adresse (den, der slutter på /exec) mellem anførselstegnene. */
+var API = 'INDSÆT-DIN-APPS-SCRIPT-ADRESSE-HER';
+var QS = new URLSearchParams(location.search);
+var KEY = QS.get('k') || (function () { try { return localStorage.getItem('fs_key') || ''; } catch (e) { return ''; } })();
+try { if (KEY) localStorage.setItem('fs_key', KEY); } catch (e) {}
+var URL_TOKEN = QS.get('t') || '';
+var LAT = 55.49, LON = 9.47;          // Kolding
+var PHOTO_SECONDS = 120;             // alle tre billeder skifter samtidig hvert 2. minut (fade 5 sek., zoom 10 sek.)
+var STRIP_SECONDS = 60;               // båndet tjekker hvert minut og skifter hvert 10. minut mellem de 5 slags indslag
+var STRIP_MINUTES = 10;               // hvor længe hvert indslag står (samme vits, citat osv. hele dagen – nye ved midnat)
+// Sort skærm om natten. days = de aftener, det gælder fra (0 = søndag … 6 = lørdag). '24:00' = fra midnat.
+var NIGHT = [
+  { days: [0, 1, 2, 3, 4], from: '22:00', to: '06:00' },   // søndag–torsdag aften: sort 22–06
+  { days: [5, 6],          from: '24:00', to: '08:00' }    // fredag og lørdag: sort 00–08
+];
+var THEME = 'mørk';                   // 'mørk' (anbefalet), 'lys' eller 'auto' (lyst fra solopgang til solnedgang)
+// Sæsontemaer (farver, lille hilsen og diskret animation). Sæt false for at slå et tema fra.
+var SEASONS = { fodselsdag: true, halloween: true, jul: true, nytaar: true, paaske: true, fastelavn: true,
+                sankthans: true, skolestart: true, sommerferie: true };
+var SEASON_ANIMATION = true;          // sne til jul, gnister til nytår osv.
+// ===== Skoleskemaer – vises på de to billedpladser nederst i tidsrummene herunder =====
+// Én række pr. modul (starttid). Fag for mandag–fredag; to forskellige fag i modulet skrives 'Tysk / Geografi'. '' = fri.
+// \u00ad i et langt ord = må deles der med bindestreg, hvis der ikke er plads.
+var SKEMAER = {
+  Emil: [
+    { tid: '08.00', fag: ['Idræt', 'Matematik', 'Dansk', 'Engelsk / Matematik', 'Mad\u00adkundskab'] },
+    { tid: '09.50', fag: ['Natur/teknologi', 'Håndværk og design', 'Historie', 'Kristen\u00addom', 'Matematik / Dansk'] },
+    { tid: '12.00', fag: ['Matematik / Dansk', 'Engelsk / Dansk', 'Engelsk', 'Dansk', 'Musik'] }
+  ],
+  Lasse: [
+    { tid: '08.00', fag: ['Tysk / Geografi', 'Dansk / Matematik', 'Tysk', 'Biologi / Engelsk', 'Historie'] },
+    { tid: '09.50', fag: ['Engelsk / Matematik', 'Idræt', 'Dansk', 'Sam\u00adfundsfag', 'Matematik'] },
+    { tid: '12.00', fag: ['Dansk', 'Fysik/kemi', 'Matematik / Engelsk', 'Valgfag', 'Dansk'] },
+    { tid: '13.35', fag: ['Håndværk og design', '', '', '', ''] }
+  ]
+};
+var SCHEDULE_SPOTS = ['Emil', 'Lasse'];   // Emil på billedet til venstre, Lasse på billedet til højre
+// Hvornår skemaerne vises (0 = søndag, 1 = mandag … 6 = lørdag)
+var SCHEDULE_TIMES = [
+  { days: [1, 2, 3, 4, 5], from: '07:00', to: '08:00' },   // hverdagsmorgen (1 time)
+  { days: [0, 1, 2, 3, 4], from: '19:00', to: '20:00' }    // aftenen før en skoledag (1 time)
+];
+
+// ===== Temaer: kant, farver og pynt på festdage (vises ikke som tekst – skriv selv i kalenderen) =====
+// Familiens fødselsdage ('MM-DD') – giver fødselsdagstema med flagranke på dagen
+var FAMILY = [
+  { name: 'Mor',   date: '12-02' },
+  { name: 'Far',   date: '05-06' },
+  { name: 'Lasse', date: '05-10' },
+  { name: 'Emil',  date: '07-08' }
+];
+// Skoleferier i Kolding Kommune (kolding.dk), første og sidste fridag. Skemaerne vises ikke i ferierne,
+// og sommerferien giver sommerferie- og skolestart-tema. Helligdage (Kristi himmelfart + fredagen efter,
+// 2. pinsedag og grundlovsdag) regnes ud automatisk.
+var SCHOOL_HOLIDAYS = [
+  { name: 'Juleferie',     start: '2026-12-19', end: '2027-01-04' },
+  { name: 'Vinterferie',   start: '2027-02-13', end: '2027-02-21' },
+  { name: 'Påskeferie',    start: '2027-03-20', end: '2027-03-29' },
+  { name: 'Sommerferie',   start: '2027-06-26', end: '2027-08-08', lastDay: '2027-06-25' },
+  { name: 'Efterårsferie', start: '2027-10-16', end: '2027-10-24' },
+  { name: 'Juleferie',     start: '2027-12-22', end: '2028-01-05' },
+  { name: 'Vinterferie',   start: '2028-02-12', end: '2028-02-20' },
+  { name: 'Påskeferie',    start: '2028-04-08', end: '2028-04-17' },
+  { name: 'Sommerferie',   start: '2028-06-24', end: '2028-08-13', lastDay: '2028-06-23' }
+];
+
+// Vitser, citater og fakta ligger i filen Indhold.gs (nemt at tilføje flere dér)
+var CONTENT = {};   // vits, citat og fakta kommer fra Idag.gs
+var FACTS = CONTENT.facts || [], JOKES = CONTENT.jokes || [], QUOTES_DK = CONTENT.quotesDk || [], QUOTES_WORLD = CONTENT.quotesWorld || [];
+
+/* ===== Hjælpere ===== */
+var TZ = 'Europe/Copenhagen';
+var ICONS = {
+  tree: '<path d="m17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4.2 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7H17Z"/><path d="M12 22v-3"/>',
+  cake: '<path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/><path d="M7 4h.01"/><path d="M12 4h.01"/><path d="M17 4h.01"/>',
+  star: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+  cloud: '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>',
+  rain: '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/>',
+  snow: '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 15h.01"/><path d="M8 19h.01"/><path d="M12 17h.01"/><path d="M12 21h.01"/><path d="M16 15h.01"/><path d="M16 19h.01"/>',
+  ski: '<circle cx="15.5" cy="4.5" r="1.8"/><path d="M14 7.5 10.5 12l3 2.5 1.5 4"/><path d="M10.5 12 8 15.5"/><path d="M13.5 8.5l3.5 1.5"/><path d="M12.5 9.5 8.5 9"/><path d="M17 10l2 8"/><path d="M3 15.5l18 5.5"/>',
+  chick: '<circle cx="12" cy="7.5" r="4"/><path d="M15.8 7.2 18.5 8.2 15.8 9.2"/><path d="M13.2 6.6h.01"/><path d="M5 13l2.3 2 2.3-2 2.4 2 2.3-2 2.4 2 2.3-2c0 5-3.1 8.5-7 8.5S5 18 5 13Z"/>',
+  flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  pencil: '<path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"/><path d="m15 5 4 4"/>',
+  backpack: '<path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M8 10h8"/><path d="M8 18h8"/><path d="M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>',
+  quote: '<path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/>',
+  feather: '<path d="M12.67 19a2 2 0 0 0 1.42-.59l6.15-6.17a6 6 0 0 0-8.49-8.49L5.59 9.91A2 2 0 0 0 5 11.33V18a1 1 0 0 0 1 1z"/><path d="M16 8 2 22"/><path d="M17.5 15H9"/>',
+  pumpkin: '<path d="M12 6c-1-2-2-3-3-3"/><path d="M12 6c4.5-1.5 9 1.5 9 7s-4 8-9 8-9-2.5-9-8 4.5-8.5 9-7Z"/><path d="M12 6c-2 2-3 5-3 7.5S10 20 12 21"/><path d="M12 6c2 2 3 5 3 7.5S14 20 12 21"/>',
+  sparkles: '<path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.13-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.13a.5.5 0 0 1 .96 0L14.06 8.5A2 2 0 0 0 15.5 9.94l6.13 1.58a.5.5 0 0 1 0 .96L15.5 14.06a2 2 0 0 0-1.44 1.44l-1.58 6.13a.5.5 0 0 1-.96 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/>',
+  mask: '<path d="M2 9c0-1.1.9-2 2-2h16a2 2 0 0 1 2 2v1c0 4-3 7-6 7-1.6 0-2.6-1-4-1s-2.4 1-4 1c-3 0-6-3-6-7Z"/><path d="M7.5 11h.01"/><path d="M16.5 11h.01"/>',
+  utensils: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+  bolt: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+  trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+  bulb: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+  history: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+  flag: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/>',
+  sunrise: '<path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
+  sunset: '<path d="M12 10V2"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m16 6-4 4-4-4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
+  smile: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/>'
+};
+function svg(name, size, color, sw) {
+  return '<svg aria-hidden="true" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="' + (color || 'currentColor') +
+    '" stroke-width="' + (sw || 1.75) + '" stroke-linecap="round" stroke-linejoin="round">' + (ICONS[name] || ICONS.star) + '</svg>';
+}
+// Dæmpede farver til ikonerne nederst til venstre (vejr og mærkedage)
+var ICON_COLORS = {
+  // vejrikonerne (sol, sky, regn, sne) er hvide – derfor står de ikke her
+  cake: '#E0A2B1', tree: '#8DBB93', pumpkin: '#DF9A60', sparkles: '#DCC27F', flame: '#E39462',
+  mask: '#C4A2D3', chick: '#E3CF7A', ski: '#98BEDC', backpack: '#A7BFA0'
+};
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function $(id) { return document.getElementById(id); }
+function dayKey(d) { return new Intl.DateTimeFormat('sv-SE', { timeZone: TZ }).format(d); }
+function hhmm(d) { return new Intl.DateTimeFormat('da-DK', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false }).format(d).replace('.', ':'); }
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function addDays(d, n) { var x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
+function dayNo() { return Math.floor(Date.parse(dayKey(new Date()) + 'T00:00:00Z') / 86400000); }
+
+/* ===== Server-kald (med parring) ===== */
+var TOKEN = URL_TOKEN || (function () { try { return localStorage.getItem('fs_token') || ''; } catch (e) { return ''; } })();
+function call(fn, args) {   // spørger Apps Script (kun læsning) – svaret kommer som JSON
+  var url = API + '?api=' + encodeURIComponent(fn) + '&args=' + encodeURIComponent(JSON.stringify(args || []));
+  return fetch(url, { redirect: 'follow' })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { if (d && d.error) throw new Error(d.error); return d ? d.result : null; });
+}
+function handleErr(err) {
+  if (String(err && err.message || err).indexOf('ikke-parret') >= 0) {
+    try { localStorage.removeItem('fs_token'); } catch (e) {}
+    TOKEN = ''; showPin();
+  }
+}
+function showPin() { $('pin').className = 'on'; setTimeout(function () { $('pininput').focus(); }, 50); }
+$('pinform').addEventListener('submit', function (e) {
+  e.preventDefault();
+  $('pinerr').textContent = '';
+  call('pairDevice', [KEY, $('pininput').value]).then(function (r) {
+    if (!r || r.error) { $('pinerr').textContent = (r && r.error) || 'Noget gik galt'; $('pininput').value = ''; return; }
+    TOKEN = r.token;
+    try { localStorage.setItem('fs_token', TOKEN); } catch (e2) {}
+    $('pin').className = '';
+    startData();
+  }, function () { $('pinerr').textContent = 'Kunne ikke kontakte serveren'; });
+});
+
+/* ===== Skalering ===== */
+var SHIFT_HOUR = -1, SHIFT = [0, 0];   // flytter skærmen 0–3 px hver time, så TV'et ikke får indbrænding
+function pixelShift() {
+  var h = Math.floor(Date.now() / 3600000);
+  if (h === SHIFT_HOUR) return;
+  SHIFT_HOUR = h; SHIFT = [h % 4, Math.floor(h / 4) % 4];
+  fit();
+}
+function fit() {
+  // fyld præcis hele skærmen – ingen kant og intet skåret af (strækkes en anelse, hvis skærmen ikke er præcis 16:9)
+  var sx = window.innerWidth / 1920, sy = window.innerHeight / 1080;
+  $('stage').style.transform = 'translate(-50%, -50%) translate(' + SHIFT[0] + 'px, ' + SHIFT[1] + 'px) scale(' + sx + ',' + sy + ')';
+}
+window.addEventListener('resize', fit); fit();
+
+/* ===== Sæsoner ===== */
+var D1 = 86400000, SEASON = null;
+function easterUTC(y) {   // påskedag (gregoriansk)
+  var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25),
+      g = Math.floor((b - f + 1) / 3), hh = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4,
+      l = (32 + 2 * e + 2 * i - hh - k) % 7, m = Math.floor((a + 11 * hh + 22 * l) / 451),
+      mo = Math.floor((hh + l - 7 * m + 114) / 31), da = ((hh + l - 7 * m + 114) % 31) + 1;
+  return Date.UTC(y, mo - 1, da);
+}
+function findSeason() {
+  var k = dayKey(new Date()), y = parseInt(k.slice(0, 4), 10), t = Date.parse(k + 'T00:00:00Z');
+  function d(m, dd, yy) { return Date.UTC(yy || y, m - 1, dd); }
+  function iso(s) { return Date.parse(s + 'T00:00:00Z'); }
+  var e = easterUTC(y), fast = e - 49 * D1, list = [];
+  FAMILY.forEach(function (p) {
+    var m = parseInt(p.date.slice(0, 2), 10), dd = parseInt(p.date.slice(3, 5), 10);
+    list.push({ key: 'fodselsdag', from: d(m, dd), to: d(m, dd), target: d(m, dd), icon: 'cake', fx: 'confetti', deco: 'flags', who: p.name });
+  });
+  list.push(
+    { key: 'halloween', from: d(10, 21), to: d(10, 31), target: d(10, 31), icon: 'pumpkin', fx: 'embers', deco: 'webs' },
+    { key: 'jul',       from: d(12, 1),  to: d(12, 27), target: d(12, 24), icon: 'tree', fx: 'snow', deco: 'fir' },
+    { key: 'nytaar',    from: d(12, 28), to: d(12, 31), target: d(1, 1, y + 1), icon: 'sparkles', fx: 'sparkle', deco: 'gold' },
+    { key: 'nytaar',    from: d(1, 1),   to: d(1, 1),   target: d(1, 1), icon: 'sparkles', fx: 'sparkle', deco: 'gold' },
+    { key: 'paaske',    from: e - 9 * D1, to: e + D1,   target: e, icon: 'chick', fx: 'petals', deco: 'chicks' },
+    { key: 'fastelavn', from: fast - 6 * D1, to: fast,  target: fast, icon: 'mask', fx: 'confetti', deco: 'bunting' },
+    { key: 'sankthans', from: d(6, 21), to: d(6, 23),   target: d(6, 23), icon: 'flame', fx: 'embers', deco: '' }
+  );
+  SCHOOL_HOLIDAYS.forEach(function (h) {
+    if (!h.lastDay) return;   // sommerferien
+    var first = iso(h.end) + D1;   // første skoledag
+    list.push({ key: 'skolestart', from: first - D1, to: first, target: first, icon: 'pencil', fx: null, deco: '' });
+    list.push({ key: 'sommerferie', from: iso(h.start), to: iso(h.end), target: first, icon: 'sun', fx: 'bubbles', deco: 'bunting' });
+  });
+  for (var i = 0; i < list.length; i++) {
+    var s = list[i];
+    if (SEASONS[s.key] && t >= s.from && t <= s.to) { s.days = Math.round((s.target - t) / D1); return s; }
+  }
+  return null;
+}
+var ALL_SEASONS = ['fodselsdag', 'halloween', 'jul', 'nytaar', 'paaske', 'fastelavn', 'sankthans', 'skolestart', 'sommerferie'];
+function applySeason() {
+  var s = findSeason(), key = s ? s.key + (s.who || '') : '';
+  if (!SEASON || SEASON.id !== key) {
+    ALL_SEASONS.forEach(function (c) { document.body.classList.remove('s-' + c); });
+    if (s) document.body.classList.add('s-' + s.key);
+    FX.start(s && SEASON_ANIMATION ? s.fx : null);
+    drawDeco(s && SEASON_ANIMATION ? s.deco : '');
+  }
+  SEASON = s || {};
+  SEASON.id = key;
+}
+
+/* ===== Sæsonpynt: lyskæde, flagranke, spindelvæv m.m. ===== */
+function drawDeco(kind) {
+  var box = $('deco');
+  if (!kind) { box.innerHTML = ''; return; }
+  var W = 1920, H = 1080, M = 4, out = '';
+  // Punkt på rammen (afstand t langs kanten) + indadvendt normal
+  var L = 2 * (W - 2 * M) + 2 * (H - 2 * M);
+  function edge(t) {
+    t = ((t % L) + L) % L;
+    var a = W - 2 * M, b = H - 2 * M;
+    if (t < a) return { x: M + t, y: M, nx: 0, ny: 1 };
+    t -= a; if (t < b) return { x: W - M, y: M + t, nx: -1, ny: 0 };
+    t -= b; if (t < a) return { x: W - M - t, y: H - M, nx: 0, ny: -1 };
+    t -= a; return { x: M, y: H - M - t, nx: 1, ny: 0 };
+  }
+  // Punkt på en kæde, der hænger i små buer (sag = hvor dybt den hænger)
+  function sagPt(t, sag) {
+    var e = edge(t), s = sag * Math.sin(Math.PI * ((((t % 150) + 150) % 150) / 150));
+    return { x: e.x + e.nx * s, y: e.y + e.ny * s, nx: e.nx, ny: e.ny };
+  }
+  function cablePath(sag, color, width) {
+    var pts = '';
+    for (var t = 0; t <= L; t += 6) { var p = sagPt(t, sag); pts += (t ? ' L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1); }
+    out += '<path d="' + pts + 'Z" fill="none" stroke="' + color + '" stroke-width="' + (width || 1.6) + '"/>';
+  }
+  // Kæde hele vejen rundt; item() tegnes for hvert "led" (drejet, så det hænger indad)
+  var K = 0.6;   // pynten er gjort mindre og ligger tæt på kanten, så den ikke dækker indholdet
+  function frameGarland(item, spacing, sag, cable) {
+    sag *= K; spacing *= K;
+    cablePath(sag, cable || 'rgba(200,190,170,0.40)');
+    for (var u = spacing / 2, n = 0; u < L; u += spacing) {
+      var p = sagPt(u, sag), ang = Math.atan2(p.ny, p.nx) * 180 / Math.PI - 90;
+      out += '<g transform="translate(' + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ') rotate(' + ang.toFixed(0) + ') scale(' + K + ')">' + item(n++) + '</g>';
+    }
+  }
+  // Figurer der står oprejst langs hele rammen (ikke drejet)
+  function frameUpright(item, spacing, inset) {
+    spacing *= K; inset *= K;
+    for (var u = spacing / 2, n = 0; u < L; u += spacing) {
+      var e = edge(u);
+      out += '<g transform="translate(' + (e.x + e.nx * inset).toFixed(1) + ',' + (e.y + e.ny * inset).toFixed(1) + ') scale(' + K + ')">' + item(n++) + '</g>';
+    }
+  }
+  var pastel = ['#E9A9C9', '#E7CB5F', '#9CC7A3', '#8FB8E8', '#F0B48A'];
+  if (kind === 'fir') {        // jul: grangren hele vejen rundt med røde og guld kugler og små varme lys
+    var dark = '', light = '';
+    for (var t = 0; t < L; t += 4) {
+      var p = sagPt(t, 8), tx = -p.ny, ty = p.nx, w = (7 + (t * 7 % 5)) * K;
+      [-1, 1].forEach(function (side, i) {
+        var dx = (tx * 0.55 + p.nx * side) * w, dy = (ty * 0.55 + p.ny * side) * w;
+        var d = 'M' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + 'l' + dx.toFixed(1) + ' ' + dy.toFixed(1);
+        if ((t / 4 + i) % 2) dark += d; else light += d;
+      });
+    }
+    out += '<path d="' + dark + '" stroke="#24452E" stroke-width="2.2" stroke-linecap="round" fill="none"/>' +
+           '<path d="' + light + '" stroke="#3A6B47" stroke-width="2" stroke-linecap="round" fill="none"/>';
+    for (var u = 40, n = 0; u < L; u += 95, n++) {
+      var q = sagPt(u, 8), col = n % 2 ? '#C9A24A' : '#B3262E';
+      out += '<g transform="translate(' + (q.x + q.nx * 8).toFixed(1) + ',' + (q.y + q.ny * 8).toFixed(1) + ') scale(' + K + ')">' +
+        '<circle r="8" fill="' + col + '"/><circle cx="-2.5" cy="-2.5" r="2.4" fill="rgba(255,255,255,0.45)"/></g>';
+    }
+    for (var v = 85; v < L; v += 95) {
+      var r = sagPt(v, 8);
+      out += '<circle class="tw" style="animation-delay:' + ((v * 0.013) % 2.6).toFixed(2) + 's" cx="' + (r.x + r.nx * 6).toFixed(1) + '" cy="' + (r.y + r.ny * 6).toFixed(1) +
+        '" r="3" fill="#FFE7B0" filter="url(#glow)"/>';
+    }
+  }
+  if (kind === 'flags') frameGarland(function () {     // Dannebrog-flagranke
+    return '<g transform="translate(-14,2)"><rect width="28" height="20" fill="#C8102E"/><rect x="8.5" width="4" height="20" fill="#fff"/><rect y="8" width="28" height="4" fill="#fff"/></g>';
+  }, 52, 14);
+  if (kind === 'chicks') {     // påske: små kyllinger hele vejen rundt med et par æg imellem
+    frameUpright(function (n) {
+      if (n % 3 === 2) return '<ellipse cx="0" cy="0" rx="7" ry="9" fill="' + pastel[n % 5] + '"/>' +
+        '<path d="M-6.5 0 l3.2 -2.6 3.3 2.6 3.2 -2.6 3.3 2.6" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.3"/>';
+      return '<g class="hop" style="animation-delay:' + ((n * 0.47) % 3).toFixed(2) + 's">' +
+        '<ellipse cx="0" cy="3" rx="11" ry="9" fill="#F4D03F"/>' +
+        '<path d="M-9 1 q-5 -1 -6 4 q4 1 7 -1z" fill="#E9BE2C"/>' +
+        '<circle cx="6" cy="-7" r="7" fill="#F7DC5A"/>' +
+        '<path d="M12.5 -8 l5 1.6 -5 1.6z" fill="#E8852B"/>' +
+        '<circle cx="8" cy="-8.5" r="1.4" fill="#2a2320"/>' +
+        '<path d="M4 -14 q1 -4 3 -1 q1 -3 2.5 0" fill="none" stroke="#E9BE2C" stroke-width="1.4"/>' +
+        '<path d="M-2 12 l-1 4 M3 12 l1 4" stroke="#E8852B" stroke-width="1.6" stroke-linecap="round"/></g>';
+    }, 84, 22);
+  }
+  if (kind === 'bunting') frameGarland(function (n) {   // vimpler
+    return '<path d="M-12 0 L12 0 L0 24Z" fill="' + pastel[n % 5] + '" opacity="0.9"/>';
+  }, 40, 12);
+  if (kind === 'gold') {       // nytår: dobbelt guldranke, stjerner, guldkugler og fyrværkeri i hjørnerne
+    out += '<defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF1C1"/><stop offset="0.45" stop-color="#E8C77E"/><stop offset="1" stop-color="#A9822F"/></linearGradient></defs>';
+    cablePath(15, 'rgba(232,199,126,0.35)', 1.4);
+    frameGarland(function (n) {
+      if (n % 2) return '<circle cx="0" cy="11" r="7" fill="url(#gold)"/><circle cx="-2" cy="9" r="2" fill="rgba(255,255,255,0.6)"/>';
+      return '<path class="tw" style="animation-delay:' + ((n * 0.41) % 2.6).toFixed(2) + 's" transform="translate(0,13) scale(1.25)" d="M0 -9 L2.6 -2.6 L9 -2.6 L3.9 1.9 L5.8 9 L0 4.5 L-5.8 9 L-3.9 1.9 L-9 -2.6 L-2.6 -2.6Z" fill="url(#gold)" filter="url(#glow)"/>';
+    }, 38, 12, 'rgba(232,199,126,0.75)');
+    function burst(cx, cy, r, delay) {
+      var d = '';
+      for (var i = 0; i < 16; i++) {
+        var a = i * Math.PI / 8;
+        d += 'M' + (cx + Math.cos(a) * r * 0.3).toFixed(1) + ' ' + (cy + Math.sin(a) * r * 0.3).toFixed(1) + 'L' + (cx + Math.cos(a) * r).toFixed(1) + ' ' + (cy + Math.sin(a) * r).toFixed(1);
+      }
+      return '<path class="tw" style="animation-delay:' + delay + 's" d="' + d + '" stroke="#F3D68C" stroke-width="2" stroke-linecap="round" filter="url(#glow)"/>';
+    }
+    out += burst(1836, 84, 40, 0) + burst(1836, 996, 40, 1.3);
+  }
+  if (kind === 'webs') {
+    function web(cx, cy, r, a0, a1) {   // kvart-spindelvæv i et hjørne
+      var spokes = 7, rings = 6, s = '', pts = [];
+      for (var i = 0; i <= spokes; i++) {
+        var a = a0 + (a1 - a0) * i / spokes; pts.push(a);
+        s += 'M' + cx + ' ' + cy + ' L' + (cx + Math.cos(a) * r).toFixed(1) + ' ' + (cy + Math.sin(a) * r).toFixed(1) + ' ';
+      }
+      for (var j = 1; j <= rings; j++) {
+        var rr = r * j / rings;
+        for (var q = 0; q < spokes; q++) {
+          var mid = (pts[q] + pts[q + 1]) / 2, cr = rr * 0.86;
+          s += 'M' + (cx + Math.cos(pts[q]) * rr).toFixed(1) + ' ' + (cy + Math.sin(pts[q]) * rr).toFixed(1) +
+            ' Q' + (cx + Math.cos(mid) * cr).toFixed(1) + ' ' + (cy + Math.sin(mid) * cr).toFixed(1) + ' ' +
+            (cx + Math.cos(pts[q + 1]) * rr).toFixed(1) + ' ' + (cy + Math.sin(pts[q + 1]) * rr).toFixed(1) + ' ';
+        }
+      }
+      return '<path d="' + s + '" fill="none" stroke="rgba(230,215,200,0.30)" stroke-width="1.3"/>';
+    }
+    // tynde spindetråde i buer hele vejen rundt
+    frameGarland(function () { return ''; }, 9999, 16, 'rgba(230,215,200,0.30)');
+    frameGarland(function () { return ''; }, 9999, 26, 'rgba(230,215,200,0.18)');
+    // spindelvæv i højre hjørner og et par steder langs kanten – kun små, svage i venstre side (I DAG og vejret)
+    out += web(W, 0, 260, Math.PI / 2, Math.PI) + web(W, H, 260, Math.PI, Math.PI * 1.5) +
+           web(0, 0, 90, 0, Math.PI / 2) + web(0, H, 90, -Math.PI / 2, 0) +
+           web(1020, 0, 150, 0.15, Math.PI - 0.15) + web(W, 650, 130, Math.PI / 2 + 0.2, Math.PI * 1.5 - 0.2) +
+           web(1290, H, 120, Math.PI + 0.2, Math.PI * 2 - 0.2);
+    function spider(x, len, delay) {
+      return '<g class="spider" style="animation-delay:' + delay + 's"><line x1="' + x + '" y1="-60" x2="' + x + '" y2="' + len + '" stroke="rgba(230,215,200,0.45)" stroke-width="1"/>' +
+        '<g transform="translate(' + x + ',' + (len + 6) + ')" fill="#2a2320" stroke="rgba(238,148,69,0.9)" stroke-width="1.2">' +
+        '<path d="M-4 -2 L-12 -8 M-4 0 L-13 -1 M-4 2 L-12 7 M-3 3 L-9 11 M4 -2 L12 -8 M4 0 L13 -1 M4 2 L12 7 M3 3 L9 11" fill="none"/>' +
+        '<ellipse cx="0" cy="0" rx="5" ry="6"/><circle cx="0" cy="-7" r="3.2"/></g></g>';
+    }
+    out += spider(1180, 4, 0) + spider(1620, 2, 2.5);
+  }
+  box.innerHTML = '<svg viewBox="0 0 1920 1080" width="1920" height="1080"><defs><filter id="glow" x="-1" y="-1" width="3" height="3">' +
+    '<feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>' + out + '</svg>';
+}
+
+/* ===== Diskret sæson-animation (lavt CPU-forbrug, 30 fps) ===== */
+var FX = (function () {
+  var cv = document.getElementById('fx'), ctx = cv.getContext('2d'), parts = [], mode = null, last = 0, raf = null;
+  var COUNT = { snow: 70, embers: 26, sparkle: 40, petals: 26, confetti: 40, bubbles: 22 };
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  function make(top) {
+    var p = { x: rnd(0, 1920), y: top ? rnd(-1080, 0) : rnd(0, 1080), s: rnd(1.5, 4), v: rnd(0.3, 1), w: rnd(0, 6.28), a: rnd(0.25, 0.7) };
+    if (mode === 'embers') { p.y = top ? rnd(1080, 1300) : rnd(0, 1080); p.s = rnd(1.5, 3); }
+    if (mode === 'bubbles') { p.y = top ? rnd(1080, 1300) : rnd(0, 1080); p.s = rnd(5, 14); p.a = rnd(0.15, 0.35); }
+    if (mode === 'confetti' || mode === 'petals') { p.c = ['#E9A9C9', '#E7CB5F', '#9CC7A3', '#8FB8E8', '#F0B48A'][Math.floor(rnd(0, 5))]; p.s = rnd(3, 6); }
+    return p;
+  }
+  function step(t) {
+    raf = requestAnimationFrame(step);
+    if (t - last < 33) return;
+    last = t;
+    ctx.clearRect(0, 0, 1920, 1080);
+    parts.forEach(function (p, i) {
+      p.w += 0.02;
+      if (mode === 'snow') { p.y += p.v * 1.2; p.x += Math.sin(p.w) * 0.4; ctx.fillStyle = 'rgba(255,255,255,' + p.a + ')'; ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 6.28); ctx.fill(); }
+      else if (mode === 'bubbles') { p.y -= p.v * 0.6; p.x += Math.sin(p.w) * 0.5; ctx.strokeStyle = 'rgba(255,245,220,' + p.a + ')'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 6.28); ctx.stroke(); }
+      else if (mode === 'embers') { p.y -= p.v * 0.8; p.x += Math.sin(p.w) * 0.5; ctx.fillStyle = 'rgba(238,148,69,' + (p.a * (0.6 + 0.4 * Math.sin(p.w * 3))) + ')'; ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 6.28); ctx.fill(); }
+      else if (mode === 'sparkle') { var o = Math.max(0, Math.sin(p.w * 2)) * p.a; ctx.fillStyle = 'rgba(232,199,126,' + o + ')'; ctx.fillRect(p.x - p.s / 2, p.y - 0.6, p.s * 1.6, 1.2); ctx.fillRect(p.x + p.s * 0.3 - 0.6, p.y - p.s * 0.8, 1.2, p.s * 1.6); }
+      else { p.y += p.v * 0.9; p.x += Math.sin(p.w) * 0.6; ctx.save(); ctx.globalAlpha = p.a; ctx.fillStyle = p.c; ctx.translate(p.x, p.y); ctx.rotate(p.w);
+             if (mode === 'petals') { ctx.beginPath(); ctx.ellipse(0, 0, p.s, p.s / 2, 0, 0, 6.28); ctx.fill(); } else ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore(); }
+      if (p.y > 1100 || p.y < -1100 || ((mode === 'embers' || mode === 'bubbles') && p.y < -20)) parts[i] = make(true);
+    });
+  }
+  return { start: function (m) {
+    mode = m; parts = [];
+    if (raf) { cancelAnimationFrame(raf); raf = null; }
+    ctx.clearRect(0, 0, 1920, 1080);
+    if (!m) return;
+    for (var i = 0; i < COUNT[m]; i++) parts.push(make(false));
+    raf = requestAnimationFrame(step);
+  } };
+})();
+
+/* ===== Tema ===== */
+var SUN = { rise: '07:00', set: '17:00' };
+function applyTheme() {
+  var t = THEME;
+  if (t === 'auto') { var n = hhmm(new Date()); t = (n >= SUN.rise && n < SUN.set) ? 'lys' : 'mørk'; }
+  document.body.classList.toggle('light', t === 'lys');
+  document.body.classList.toggle('dark', t !== 'lys');
+}
+
+/* ===== Sort skærm om natten ===== */
+function isNight() {
+  var now = new Date(), t = hhmm(now);
+  var wd = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, weekday: 'short' }).format(now));
+  return NIGHT.some(function (n) {
+    return (t >= n.from && n.days.indexOf(wd) >= 0) || (t < n.to && n.days.indexOf((wd + 6) % 7) >= 0);
+  });
+}
+
+/* ===== Ur ===== */
+function tick() {
+  var night = isNight();
+  if (night !== document.body.classList.contains('night')) {
+    document.body.classList.toggle('night', night);
+    if (!night) { SEASON = null; nextStrip(); renderCalendar(); }   // vågn op: frisk sæson, bånd og kalender
+    else FX.start(null);
+  }
+  if (night) { $('clock').textContent = hhmm(new Date()); return; }   // om natten: kun uret kører, resten står stille
+  pixelShift();
+  applyTheme();
+  if (new Date().getSeconds() === 0 || !SEASON) applySeason();
+  var now = new Date();
+  $('clock').textContent = hhmm(now);
+  if (hhmm(now) === '00:00' && now.getSeconds() < 2) renderCalendar();   // ny dag
+  else if (now.getSeconds() === 0) {
+    if (now.getMinutes() % 5 === 0) renderCalendar();   // flytter NU-linjen og nedtoner det, der er slut
+    else { var nl = document.querySelector('.nowline'); if (nl) nl.textContent = 'NU ' + hhmm(now); }
+  }
+  if (hhmm(now) === '03:00' && now.getSeconds() < 2) location.reload();
+  checkSchedule();   // skift præcis på klokkeslæt
+}
+
+/* ===== Kalender: 7 dage fra kant til kant, i dag først ===== */
+var EVENTS = [], WEATHER = null;
+var WD3 = ['SØN', 'MAN', 'TIR', 'ONS', 'TOR', 'FRE', 'LØR'];
+function weekdayOf(d) {
+  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, weekday: 'short' }).format(d));
+}
+// Hvem aftalen gælder: Mor, Far, Lasse og Emil fjernes fra teksten, hvor de end står, og vises som farvede bogstaver.
+// 'og', '+', '&', ',' og '/' mellem navnene fjernes også. 'PRO' først i titlen giver Mors bogstav (PRO bliver stående).
+// 'Far og Emil: Svømning' → (F)(E) Svømning · 'Kør Emil og Lasse til svømning' → (E)(L) Kør til svømning · uden navn: som den er.
+var PERSON_COLORS = { Mor: '#E25555', Far: '#4A8FE0', Lasse: '#45B067', Emil: '#F28C28' };
+function whoOf(ev) {
+  var t = String(ev.title).trim(), names = Object.keys(PERSON_COLORS), found = [];
+  var NAME = '(?:' + names.join('|') + ')', B1 = '(?<![\\wæøåÆØÅ])', B2 = '(?![\\wæøåÆØÅ])';
+  var SEP = '\\s*(?:,|&|\\+|/|og(?![\\wæøåÆØÅ]))\\s*';
+  var group = new RegExp(B1 + NAME + B2 + '(?:' + SEP + NAME + B2 + ')*', 'gi');
+  if (/^PRO(?![\wæøåÆØÅ])/i.test(t)) found.push('Mor');
+  t = t.replace(group, function (m) {
+    (m.match(new RegExp(NAME, 'gi')) || []).forEach(function (x) {
+      var nm = names.filter(function (n) { return n.toLowerCase() === x.toLowerCase(); })[0];
+      if (found.indexOf(nm) < 0) found.push(nm);
+    });
+    return ' ';
+  });
+  if (!found.length) return null;
+  t = t.replace(/\s{2,}/g, ' ')
+       .replace(/^\s*(?:[:\-–,&+\/]|og(?![\wæøå]))\s*/i, '').replace(/\s*(?:[:\-–,&+\/]|(?<![\wæøå])og)\s*$/i, '')
+       .replace(/\s+([:,.])/g, '$1').trim();
+  return { names: found, rest: t ? cap(t) : '' };
+}
+function isDinner(ev) {   // aftensmad = starter kl. 18.00 og slutter senest kl. 19.00
+  if (ev.allDay || !ev.end) return false;
+  var mins = (ev.end - ev.start) / 60000;
+  return hhmm(new Date(ev.start)) === '18:00' && mins > 0 && mins <= 60;
+}
+function renderCalendar() {
+  var now = new Date(), byDay = {}, seen = {};
+  EVENTS.forEach(function (ev) {
+    var id = String(ev.title).trim().toLowerCase() + '|' + ev.start + '|' + ev.allDay;   // samme aftale kun én gang
+    if (seen[id]) return; seen[id] = true;
+    var k = dayKey(new Date(ev.start)); (byDay[k] = byDay[k] || []).push(ev);
+  });
+  Object.keys(byDay).forEach(function (k) { byDay[k].sort(function (a, b) { return a.start - b.start; }); });   // altid i tidsrækkefølge
+  var week = $('week'); week.innerHTML = '';
+  for (var i = 0; i < 6; i++) {   // 6 dage: 3 øverst, 3 nederst
+    var d = addDays(now, i), key = dayKey(d), col = el('div', 'day' + (i === 0 ? ' today' : '') + (i > 0 && !(byDay[key] || []).length ? ' free' : '')), head = el('div', 'dh');
+    var dl = el('div', 'dl');
+    dl.appendChild(el('div', 'nm', i === 0 ? 'I DAG' : WD3[weekdayOf(d)]));
+    dl.appendChild(el('div', 'num', parseInt(key.slice(8), 10) + '/' + parseInt(key.slice(5, 7), 10)));   // fx 5/11
+    head.appendChild(dl);
+    var w = WEATHER && WEATHER[key];
+    if (w) {   // vejr i overskriften: ikon og kun højeste temperatur
+      var dwi = el('div', 'dwi');
+      dwi.innerHTML = svg(w.icon, 40, ICON_COLORS[w.icon] || 'currentColor', 1.9);
+      var tt = el('div', 'tt');
+      tt.appendChild(el('b', null, w.max + '°'));
+      head.appendChild(dwi); head.appendChild(tt);
+    }
+    col.appendChild(head);
+    var all = byDay[key] || [], nowAfter = null;
+    var evs = all;
+    if (!evs.length && i === 0) col.appendChild(el('div', 'empty', 'Ingen aftaler'));
+    evs.forEach(function (ev) {
+      var e = el('div', 'ev' + (isDinner(ev) ? ' dinner' : '') + (i === 0 && !ev.allDay && (ev.end || ev.start + 3600000) <= now.getTime() ? ' past' : ''));
+      var dinner = isDinner(ev), who = dinner ? null : whoOf(ev);
+      e.appendChild(el('span', 'tm', ev.allDay ? '' : hhmm(new Date(ev.start))));   // 1. klokkeslæt
+      var ic = el('span', 'ic');                                                     // 2. bogstaver / bestik
+      if (dinner) { var b0 = el('span', 'who'); b0.innerHTML = svg('utensils', 18, '#1B1A18', 2.4); ic.appendChild(b0); }
+      else if (who) who.names.forEach(function (n) { var b = el('span', 'who', n.charAt(0)); b.style.background = PERSON_COLORS[n]; ic.appendChild(b); });
+      e.appendChild(ic);
+      e.appendChild(el('span', 'x', who ? (who.rest || '') : ev.title));             // 3. hvad det er
+      col.appendChild(e);
+      if (i === 0 && !ev.allDay && ev.start <= now.getTime()) nowAfter = e;   // NU-linjen kommer efter den seneste aftale, der er gået i gang
+    });
+    if (i === 0) {
+      var nl = el('div', 'nowline', 'NU ' + hhmm(now));
+      if (nowAfter) col.insertBefore(nl, nowAfter.nextSibling); else col.insertBefore(nl, head.nextSibling);
+    }
+    week.appendChild(col);
+    // vis så mange aftaler, der er plads til – resten som "+2 mere"
+    var more = null, cut = 0;
+    while (col.scrollHeight > col.clientHeight + 1) {
+      var last = col.querySelectorAll('.ev');
+      if (!last.length) break;
+      last[last.length - 1].remove(); cut++;
+      if (!more) { more = el('div', 'more'); col.appendChild(more); }
+      more.textContent = '+' + cut + ' mere';
+    }
+  }
+}
+
+/* ===== Vejr (Open-Meteo, gratis) – 7 dage i kalenderen ===== */
+function wInfo(code) {
+  if (code <= 1) return ['sun', code === 0 ? 'Klart' : 'Mest klart'];
+  if (code <= 3) return ['cloud', code === 2 ? 'Delvis skyet' : 'Overskyet'];
+  if (code <= 48) return ['cloud', 'Tåge'];
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return ['snow', 'Sne'];
+  if (code >= 95) return ['rain', 'Torden'];
+  if (code >= 80) return ['rain', 'Byger'];
+  return ['rain', 'Regn'];
+}
+function loadWeather() {
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=' + LAT + '&longitude=' + LON +
+    '&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&hourly=weather_code,temperature_2m,wind_speed_10m' +
+    '&wind_speed_unit=ms&timezone=Europe%2FCopenhagen&forecast_days=7')
+  .then(function (r) { return r.json(); }).then(function (w) {
+    WEATHER = {};
+    w.daily.time.forEach(function (t, i) {
+      WEATHER[t] = { icon: wInfo(w.daily.weather_code[i])[0], max: Math.round(w.daily.temperature_2m_max[i]), min: Math.round(w.daily.temperature_2m_min[i]) };
+    });
+    SUN.rise = w.daily.sunrise[0].slice(11, 16);
+    SUN.set = w.daily.sunset[0].slice(11, 16);
+    HOURLY = w.hourly || null;
+    applyTheme();
+    renderCalendar();
+    renderWx();
+  }).catch(function () {});
+}
+
+/* ===== Vejret i 3 tidsrum: 8–12, 12–16, 16–20 (efter kl. 20: i morgen) ===== */
+var HOURLY = null, WX_SLOTS = [[8, 14], [14, 20]];   // 2 tidsrum i dag
+function renderWx() {
+  var box = $('wxrows'); if (!HOURLY) return;
+  var now = new Date(), H = parseInt(hhmm(now).slice(0, 2), 10);
+  var day = dayKey(now), nowKey = dayKey(now) + 'T' + hhmm(now).slice(0, 2) + ':00';
+  box.innerHTML = '';
+  // 2 tidsrum i dag: ikon og højeste temperatur – det overståede tidsrum nedtones
+  WX_SLOTS.forEach(function (sl) {
+    var codes = {}, tmax = null, n = 0;
+    HOURLY.time.forEach(function (t, i) {
+      var h = parseInt(t.slice(11, 13), 10);
+      if (t.slice(0, 10) !== day || h < sl[0] || h >= sl[1]) return;
+      var c = wInfo(HOURLY.weather_code[i])[0];
+      codes[c] = (codes[c] || 0) + 1;
+      if (tmax == null || HOURLY.temperature_2m[i] > tmax) tmax = HOURLY.temperature_2m[i];
+      n++;
+    });
+    if (!n) return;
+    var icon = Object.keys(codes).sort(function (a, b) { return codes[b] - codes[a]; })[0];   // det mest typiske vejr
+    var c = el('div', 'slot' + (H >= sl[1] ? ' past' : (H >= sl[0] ? ' cur' : '')));
+    c.appendChild(el('div', 'h', sl[0] + '–' + sl[1]));
+    var r = el('div', 'r'); r.innerHTML = svg(icon, 52, ICON_COLORS[icon] || 'currentColor', 1.6) + '<span>' + Math.round(tmax) + '°</span>';
+    c.appendChild(r);
+    box.appendChild(c);
+  });
+}
+
+/* ===== Båndet: tre felter med dagens vits · citat/kloge ord · vidste du/tanke ===== */
+var stripStep = 0, stripDay = null;
+var STRIP_KINDS = {
+  joke:    { label: 'DAGENS VITS',  icon: 'smile' },
+  quoteDk: { label: 'DAGENS CITAT', icon: 'quote' },
+  quoteW:  { label: 'DAGENS CITAT', icon: 'quote' },
+  quote:   { label: 'DAGENS CITAT', icon: 'quote' },
+  fact:    { label: 'VIDSTE DU?',   icon: 'bulb' },
+  event:   { label: 'PÅ DENNE DAG',  icon: 'history' },
+  birth:   { label: 'FØDSELSDAG',    icon: 'cake' }
+};
+var EXTRAS = {};   // dagens vits, citat, vidste du, på denne dag og fødselsdag – hentes fra Idag.gs
+var STRIP_SEGS = [['joke'], ['quote'], ['fact'], ['event'], ['birth']];   // rækkefølgen i båndet
+function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+function pick(n, len) {   // fast, blandet rækkefølge gennem hele listen – ingen gentagelser før alle er vist
+  if (!len) return 0;
+  var step = 97; while (gcd(step, len) !== 1) step++;
+  return (n * step) % len;
+}
+var STRIP_LISTS = { joke: JOKES, fact: FACTS, quoteDk: QUOTES_DK, quoteW: QUOTES_WORLD };
+function fillStrip(q, kind, v) {
+  if (kind === 'joke') {   // pointen på sin egen linje
+    q.textContent = v[0];
+    if (v[1]) q.appendChild(el('div', 'a', v[1]));
+  } else if (kind === 'quoteDk' || kind === 'quoteW') {   // hvem der har sagt det: egen linje, kursiv, højst én linje
+    q.textContent = '»' + v[0] + '«';
+    q.appendChild(el('div', 'who', '– ' + v[1]));
+  } else {
+    q.textContent = v;
+  }
+}
+function stripSlot() { return Math.floor(Date.now() / (STRIP_MINUTES * 60000)); }
+function stripItem(k) {   // dagens indslag: fra Idag.gs – ellers fra Indhold.gs, hvis den ikke er hentet endnu
+  if (EXTRAS && EXTRAS[k]) return EXTRAS[k];
+  var l = k === 'quote' ? (QUOTES_DK.length ? QUOTES_DK : QUOTES_WORLD) : STRIP_LISTS[k];
+  return l && l.length ? l[pick(dayNo() * 2, l.length)] : null;
+}
+function hasItem(k) { return !!stripItem(k); }
+function renderStrip() {
+  var kinds = STRIP_SEGS.map(function (ks) {   // citat: dansk og udenlandsk hver anden dag
+    var k2 = ks.filter(hasItem);
+    return k2.length ? k2[dayNo() % k2.length] : null;
+  }).filter(Boolean);
+  if (!kinds.length) return;
+  var n = stripSlot() % kinds.length, key = kinds[n], v = stripItem(key);
+  var seg = document.querySelector('.seg.one'), q = $('t0'), sub = $('s0'), lab = STRIP_KINDS[key].label;
+  sub.className = 'sub'; sub.textContent = '';
+  if (key === 'joke') { q.textContent = v[0]; sub.textContent = v[1] || ''; sub.className = 'sub joke'; }
+  else if (key === 'quote') { q.textContent = '»' + v[0] + '«'; sub.textContent = v[1] || ''; }
+  else if (key === 'fact') q.textContent = v;
+  else if (key === 'event') {   // i dag – eller nærmeste dag i samme uge
+    var dd = addDays(new Date(), v.off || 0), dk = dayKey(dd);
+    lab = (v.off ? 'DENNE UGE I HISTORIEN' : 'PÅ DENNE DAG') + ' · ' + v.year;
+    q.textContent = v.text;
+    sub.textContent = (v.off ? parseInt(dk.slice(8), 10) + '. ' + MONTHS[parseInt(dk.slice(5, 7), 10) - 1] + ' ' + v.year + ' – ' : '') + 'for ' + v.ago + ' år siden';
+  } else if (key === 'birth') {
+    lab = v.off ? 'FØDSELSDAG' : 'FØDSELSDAG I DAG';
+    q.textContent = v.text; sub.textContent = v.desc || '';
+  }
+  $('l0').textContent = lab;
+  $('i0').innerHTML = svg(STRIP_KINDS[key].icon, 22, 'currentColor', 2);
+  var dots = $('dots'); dots.innerHTML = '';
+  kinds.forEach(function (k, i) { dots.appendChild(el('i', i === n ? 'on' : null)); });
+  // samme stil hver gang – teksten skal være på én linje og bliver kun mindre, hvis den ikke kan være der
+  var fs = 34; q.style.fontSize = fs + 'px';
+  while (q.scrollWidth > q.clientWidth + 1 && fs > 20) { fs -= 1; q.style.fontSize = fs + 'px'; }
+}
+function nextStrip() {
+  if (document.body.classList.contains('night')) return;
+  var slot = stripSlot();
+  if (slot === stripStep) return;   // samme halve time: behold indslaget
+  stripStep = slot;
+  var seg = document.querySelector('.seg.one');
+  seg.classList.add('fade');
+  setTimeout(function () { renderStrip(); seg.classList.remove('fade'); }, 600);
+}
+function loadExtras() {   // én gang i døgnet (serveren gemmer dagens indslag)
+  if (EXTRAS && EXTRAS.date === dayKey(new Date())) return;
+  if (!TOKEN) return;
+  call('getTodayExtras', [KEY, TOKEN]).then(function (x) { if (x) { EXTRAS = x; renderStrip(); } }, function () {});
+}
+
+/* ===== 3 familiebilleder fra Google Fotos (Drive-mappen) – alle skifter samtidig hvert minut ===== */
+var PHOTOS = [], pIndex = 0, SHOWING = [null, null, null], photosStarted = false;
+var MONTHS = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
+function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function photoDate(name) {   // '20240714-001.jpg' → '2024' (kun årstallet)
+  var m = /^(\d{4})\d{4}-/.exec(name || '');
+  return m && +m[1] >= 1900 && +m[1] <= 2100 ? m[1] : '';
+}
+function loadImage(id) {
+  return call('getPhoto', [KEY, TOKEN, id]).then(function (p) {
+    if (!p || !p.data) return null;
+    var src = 'data:' + p.mime + ';base64,' + p.data;
+    return new Promise(function (res) {
+      var img = new Image();
+      img.onload = function () { res({ id: id, src: src, name: p.name || '' }); };
+      img.onerror = function () { res(null); };
+      img.src = src;
+    });
+  }, function (e) { handleErr(e); return null; });
+}
+function nextIds() {   // 3 nye billeder, ikke de samme som dem, der står nu
+  var out = [];
+  for (var t = 0; t < PHOTOS.length * 2 && out.length < 3; t++) {
+    var id = PHOTOS[pIndex % PHOTOS.length];
+    pIndex++; if (pIndex % PHOTOS.length === 0) shuffle(PHOTOS);
+    if (out.indexOf(id) < 0 && (SHOWING.indexOf(id) < 0 || PHOTOS.length <= 3)) out.push(id);
+  }
+  while (out.length < 3 && PHOTOS.length) out.push(PHOTOS[out.length % PHOTOS.length]);
+  return out;
+}
+var nextSet = null, loadingSet = null;
+function prefetchSet() {   // hent de næste 3 i forvejen, så de kan skifte på samme tid
+  if (loadingSet || !PHOTOS.length) return loadingSet;
+  loadingSet = Promise.all(nextIds().map(loadImage)).then(function (ps) { nextSet = ps; loadingSet = null; });
+  return loadingSet;
+}
+function showSet() {
+  if (document.body.classList.contains('night') && SHOWING.some(Boolean)) return;   // om natten står billederne stille (men vises, hvis skærmen starter om natten)
+  if (!nextSet) { prefetchSet(); return; }
+  var ps = nextSet; nextSet = null;
+  ps.forEach(function (p, f) {
+    if (!p) return;
+    var box = $('F' + f), layers = box.querySelectorAll('.pl'), cur = box.querySelector('.pl.show');
+    var next = layers[0] === cur ? layers[1] : layers[0];
+    next.querySelector('.cbg').src = p.src; next.querySelector('.fg').src = p.src;
+    next.classList.remove('zoom'); void next.offsetWidth;   // start zoomen forfra
+    next.classList.add('show', 'zoom'); if (cur) cur.classList.remove('show');   // fade ind / fade ud (det gamle billede beholder sin zoom)
+    box.querySelector('.pdate').textContent = photoDate(p.name);
+    SHOWING[f] = p.id;
+  });
+  setTimeout(prefetchSet, 2500);
+}
+function startPhotos() {
+  photosStarted = true;
+  prefetchSet().then(function () { showSet(); setInterval(showSet, PHOTO_SECONDS * 1000); });
+}
+
+/* ===== Skoleskemaer på billedpladserne i de faste tidsrum ===== */
+var schedOn = false, schedDay = -1;
+var DAY_SHORT = ['Man', 'Tir', 'Ons', 'Tor', 'Fre'], DAY_LONG = ['mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag'];
+function weekdayNow() {
+  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, weekday: 'short' }).format(new Date()));
+}
+function isScheduleTime() {
+  var wd = weekdayNow(), t = hhmm(new Date());
+  if (!SCHEDULE_TIMES.some(function (w) { return w.days.indexOf(wd) >= 0 && t >= w.from && t < w.to; })) return false;
+  return !schoolFree(scheduleDay().key);   // ingen skemaer, når næste skoledag er en fridag
+}
+function scheduleDay() {   // om formiddagen: i dag – om eftermiddagen/aftenen: næste skoledag (0 = mandag)
+  var wd = weekdayNow(), am = hhmm(new Date()) < '12:00';
+  var ahead = am ? 0 : 1, d = (wd + ahead) % 7;
+  while (d === 0 || d === 6) { ahead++; d = (wd + ahead) % 7; }   // weekend → mandag
+  return { i: d - 1, today: ahead === 0, key: dayKey(addDays(new Date(), ahead)) };
+}
+function schoolFree(key) {   // ferie eller helligdag, hvor der ikke er skole
+  if (!key) return true;
+  if (SCHOOL_HOLIDAYS.some(function (h) { return key >= h.start && key <= h.end; })) return true;
+  var y = parseInt(key.slice(0, 4), 10), e = easterUTC(y), t = Date.parse(key + 'T00:00:00Z');
+  var free = [39, 40, 50].map(function (n) { return e + n * D1; });   // Kristi himmelfart, fredagen efter, 2. pinsedag
+  return free.indexOf(t) >= 0 || key.slice(5) === '06-05';            // grundlovsdag
+}
+function renderSchedules() {
+  var day = scheduleDay();
+  schedDay = day.i;
+  [['sk1', SCHEDULE_SPOTS[0]], ['sk2', SCHEDULE_SPOTS[1]]].forEach(function (spot) {
+    var box = $(spot[0]), rows = SKEMAER[spot[1]];
+    box.innerHTML = '';
+    box.classList.toggle('ready', !!rows);
+    if (!rows) return;
+    var head = el('div', 'sh');
+    head.appendChild(el('span', 'label', spot[1].toUpperCase() + ' · SKEMA'));
+    var when = el('span', 'when', day.today ? 'I dag: ' : 'I morgen: ');
+    when.appendChild(el('b', null, cap(DAY_LONG[day.i])));
+    head.appendChild(when);
+    box.appendChild(head);
+    var tbl = el('table'), hr = el('tr');
+    hr.appendChild(el('th', 'tc'));
+    DAY_SHORT.forEach(function (n, i) { hr.appendChild(el('th', i === day.i ? 'on' : null, n)); });
+    tbl.appendChild(hr);
+    rows.forEach(function (r) {
+      var tr = el('tr');
+      tr.appendChild(el('td', 'tc', r.tid));
+      r.fag.forEach(function (f, i) {
+        var td = el('td', i === day.i ? 'on' : null);
+        String(f || '').split(' / ').forEach(function (x) { if (x) td.appendChild(el('div', 'f', x.replace(/\//g, '/\u200b'))); });   // må knække efter /
+        tr.appendChild(td);
+      });
+      tbl.appendChild(tr);
+    });
+    box.appendChild(tbl);
+  });
+}
+function checkSchedule() {
+  var on = isScheduleTime();
+  if (on && scheduleDay().i !== schedDay) renderSchedules();
+  if (on === schedOn) return;
+  schedOn = on;
+  if (on) renderSchedules();
+  document.body.classList.toggle('skema', on);
+}
+
+/* ===== Data ===== */
+var dataStarted = false;
+function loadData() {
+  if (!TOKEN) return;
+  call('getData', [KEY, TOKEN]).then(function (d) {
+    EVENTS = d.events || []; renderCalendar();
+    if ((d.photos || []).slice().sort().join() !== PHOTOS.slice().sort().join()) { PHOTOS = shuffle((d.photos || []).slice()); pIndex = 0; }
+    if (!photosStarted && PHOTOS.length) startPhotos();
+  }, handleErr);
+}
+function startData() {
+  if (dataStarted) { loadData(); return; }
+  dataStarted = true;
+  loadData(); setInterval(loadData, 10 * 60 * 1000);
+}
+
+/* ===== Start ===== */
+tick(); setInterval(tick, 1000);
+renderCalendar(); stripStep = stripSlot(); renderStrip();
+loadExtras(); setInterval(loadExtras, 60 * 1000);   // tjekker hvert minut – henter nye indslag lige efter midnat
+setInterval(nextStrip, STRIP_SECONDS * 1000);
+setInterval(function () { renderCalendar(); renderWx(); }, 5 * 60 * 1000);
+loadWeather(); setInterval(loadWeather, 30 * 60 * 1000);
+if (TOKEN) startData(); else showPin();
+</script>
+
+
+<!-- ===== Dæmpet skærm: 10 % om dagen, 50 % de 2 timer før natten, 80 % om natten (aldrig helt sort) ===== -->
+<div id="dimOverlay" style="position:fixed;inset:0;background:#000;opacity:0.1;pointer-events:none;z-index:99998;transition:opacity 60s linear;"></div>
+<script>
+(function () {
+  var DIM_MINUTES = 120;    // hvor længe før sort skærm den kraftige dæmpning starter
+  var DIM_DAY     = 0.1;   // 10 % dæmpet om dagen
+  var DIM_EVENING = 0.5;   // 50 % dæmpet de 2 timer før natten
+  var DIM_NIGHT   = 0.8;   // 80 % dæmpet om natten (tiderne står i NIGHT øverst)
+  var ZONE        = 'Europe/Copenhagen';
+  var WEEK        = 7 * 1440;
+
+  function toMin(s) { var p = s.split(':'); return (+p[0]) * 60 + (+p[1]); }
+
+  function nowWeekMinutes() {
+    var parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: ZONE, weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(new Date());
+    var get = function (t) { return parts.filter(function (x) { return x.type === t; })[0].value; };
+    var wd = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday'));
+    return wd * 1440 + (+get('hour')) * 60 + (+get('minute'));
+  }
+
+  function isEvening() {
+    if (typeof NIGHT === 'undefined') return false;
+    var w = nowWeekMinutes();
+    return NIGHT.some(function (r) {
+      return r.days.some(function (d) {
+        var start = d * 1440 + toMin(r.from);
+        var diff = ((w - (start - DIM_MINUTES)) % WEEK + WEEK) % WEEK;
+        return diff < DIM_MINUTES;
+      });
+    });
+  }
+
+  function update() {
+    var el = document.getElementById('dimOverlay');
+    var night = typeof isNight === 'function' && isNight();
+    if (el) el.style.opacity = night ? DIM_NIGHT : (isEvening() ? DIM_EVENING : DIM_DAY);
+  }
+
+  update();
+  setInterval(update, 30000);
+})();
+</script>
+
+</body>
+</html>
