@@ -208,7 +208,7 @@
     <div class="seg clk">
       <div id="clock">--:--</div>
     </div>
-    <div class="seg one"><div class="ic2" id="i0"></div><div class="col"><div class="lb"><span id="l0"></span><span class="dots" id="dots"></span></div><div class="txt" id="t0"></div><div class="sub" id="s0"></div></div></div>
+    <div class="seg one"><div class="ic2" id="i0" style="display:none"></div><div class="col"><div class="lb"><span id="l0"></span><span class="dots" id="dots"></span></div><div class="txt" id="t0"></div><div class="sub" id="s0"></div></div></div>
     <div class="wx" id="wxrows"></div>
   </div>
 
@@ -734,12 +734,6 @@ function renderCalendar() {
       var dinner = isDinner(ev);
       e.appendChild(el('span', 'tm', ev.allDay ? 'Hele' : hhmm(new Date(ev.start))));   // 1. klokkeslæt
       var x = el('span', 'x', ev.title);   // 2. teksten, som den står i kalenderen
-      if (dinner) {   // aftensmad: lille bestik foran retten (holdes på linje med første ord)
-        var words = String(ev.title).trim().split(/\s+/), nb = el('span', 'nb');
-        nb.innerHTML = '<span class="fork">' + svg('utensils', 22, 'currentColor', 2.2) + '</span>';
-        nb.appendChild(document.createTextNode(words.shift()));
-        x.textContent = ''; x.appendChild(nb); if (words.length) x.appendChild(document.createTextNode(' ' + words.join(' ')));
-      }
       e.appendChild(x);             // 3. hvad det er
       col.appendChild(e);
       if (i === 0 && !ev.allDay && ev.start <= now.getTime()) nowAfter = e;   // NU-linjen kommer efter den seneste aftale, der er gået i gang
