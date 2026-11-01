@@ -58,9 +58,8 @@
   /* Skillelinjen under overskriften: hele kolonnens bredde, 2 px, accentfarve i midten og blød udtoning i begge ender */
   .dh::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 2px; opacity: 0.9;
     background: linear-gradient(90deg, transparent 0%, var(--accent) 22%, var(--accent) 78%, transparent 100%); }
-  .dl { display: flex; align-items: baseline; gap: 10px; min-width: 0; }   /* ugedag og dato på samme linje */
+  .dl { display: flex; align-items: baseline; gap: 10px; min-width: 0; }   /* ugedagen */
   .dh .nm { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: 0.02em; color: var(--text); white-space: nowrap; }
-  .dh .num { font-size: 23px; font-weight: 600; color: var(--muted); white-space: nowrap; }   /* datoen: 15 % større */
   .dwi { flex: none; margin-left: auto; display: flex; align-items: center; gap: 8px; padding: 5px 14px 5px 10px; border-radius: 999px;
     background: rgba(239, 235, 228, 0.08); }   /* vejret i en lille pille */
   .dwi svg { flex: none; display: block; }
@@ -69,7 +68,6 @@
   /* Weekend og helligdage: guldbaggrund */
   .day.gold { background: rgba(var(--wood), 0.16); }   /* præcis samme farve som båndet (følger også sæsonfarven) */
   .day.gold .dh .nm, .day.gold .ev .tm { color: var(--accent); }
-  .day.gold .dh .num { color: rgba(239, 235, 228, 0.62); }
   .day.gold .dwi { background: rgba(var(--wood), 0.22); }
   /* Én linje pr. aftale i 3 faste kolonner: klokkeslæt · bogstaver · tekst */
   .ev { flex: none; display: grid; grid-template-columns: 62px minmax(0, 1fr); column-gap: 4px; align-items: baseline; }   /* klokkeslæt · tekst */
@@ -748,7 +746,6 @@ function renderCalendar() {
     var d = addDays(now, i), key = dayKey(d), col = el('div', 'day' + (i === 0 ? ' today' : '') + (isGoldDay(key) ? ' gold' : '') + (i > 0 && !(byDay[key] || []).length ? ' free' : '')), head = el('div', 'dh');
     var dl = el('div', 'dl');
     dl.appendChild(el('div', 'nm', i === 0 ? 'I DAG' : WD3[weekdayOf(d)]));
-    dl.appendChild(el('div', 'num', parseInt(key.slice(8), 10) + '/' + parseInt(key.slice(5, 7), 10)));   // fx 5/11
     head.appendChild(dl);
     var w = WEATHER && WEATHER[key];
     if (w) {   // vejr i overskriften: ikon og kun højeste temperatur
