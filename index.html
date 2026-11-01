@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <base target="_top">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&family=Caveat:wght@600&display=swap">
 <style>
   /* ===== Nordisk mørkt tema (lyst tema kan vælges med THEME) ===== */
   :root { --wood: 164, 122, 78; --r: 14px; --r-sm: 8px; }   /* samme runde hjørner overalt */
@@ -72,13 +72,10 @@
   .day.gold .dh .nm, .day.gold .ev .tm { color: var(--accent); }
   .day.gold .dwi { background: rgba(var(--wood), 0.22); }
   /* Én linje pr. aftale i 3 faste kolonner: klokkeslæt · bogstaver · tekst */
-  /* Aftaler som tidslinje: prik og tynd linje til venstre, klokkeslæt lille over titlen */
-  .day { position: relative; }
-  .day::after { content: ''; position: absolute; left: 23px; top: 70px; bottom: 16px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, rgba(var(--wood), 0.35), transparent); pointer-events: none; }
-  .day.free::after { display: none; }
-  .ev { flex: none; position: relative; display: block; margin: 0 0 9px 0; padding-left: 22px; }
-  .ev::before { content: ''; position: absolute; left: 3px; top: 8px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); opacity: 0.85; }
-  .ev .tm { display: block; font-size: 17px; font-weight: 500; line-height: 1.2; letter-spacing: 0.05em; margin: 0 0 1px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  /* Aftaler: klokkeslæt (guld) til venstre, let tekst, tynde skillelinjer. Højst 2 linjer – teksten bryder ind under klokkeslættet */
+  .ev { flex: none; display: block; margin: 0; padding: 5px 0 4px; border-top: 1px solid rgba(239, 235, 228, 0.09); }
+  .dh + .ev, .nowline + .ev { border-top: 0; padding-top: 2px; }
+  .ev .tm { float: left; margin-right: 9px; font-size: 18px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 24px; position: relative; top: 0.5px; }
   .ev .tm.pill { color: #1B1A18; }   /* klokkeslæt i personens farve */
   .ev .x .nb { white-space: nowrap; }
   .ev .x .fork { display: inline-flex; vertical-align: -2px; margin-right: 6px; color: var(--muted); }
@@ -86,7 +83,7 @@
   .ev .ic .who:nth-child(2):nth-last-child(2), .ev .ic .who:nth-child(3) { margin-left: -12px; box-shadow: 0 0 0 2px #22201D; }   /* sjældent 3 personer: bogstaverne lægger sig lidt ind over hinanden */
   .ev .who { flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     font-size: 17px; font-weight: 800; color: #1B1A18; letter-spacing: 0; }
-  .ev .x { display: block; font-size: 22px; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }   /* let skrift som uret */
+  .ev .x { font-size: 21px; font-weight: 500; line-height: 1.17; display: inline; overflow-wrap: anywhere; }   /* let skrift som uret */
   .ev.past { opacity: 0.4; }   /* aftaler, der er slut */
   /* NU-linjen i I DAG: lille klokkeslæt i midten, og linjerne løber ud til begge sider – flytter sig i løbet af dagen */
   .nowline { flex: none; display: flex; align-items: center; justify-content: center; gap: 9px; margin: 4px 0; color: var(--accent);
@@ -171,6 +168,34 @@
   .pdate { position: absolute; right: 14px; bottom: 10px; font-size: 17px; font-weight: 600; letter-spacing: 0.04em; color: rgba(255, 255, 255, 0.55);
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85); }
   .pdate:empty { display: none; }
+  /* Collage: tre fotos i forskellig størrelse, som billeder med bred, ujævn kant og håndskrevet tekst – let drejet */
+  #bottom { left: 0; right: 0; top: 560px; bottom: 0; padding: 12px 24px 24px; gap: 8px; grid-template-columns: 1.1fr 0.82fr 1.08fr; }
+  #bottom .cellb { position: relative; padding: 0 6px; }
+  #bottom .cellb::before { content: ''; position: absolute; z-index: 6; top: 0; left: 50%; width: 84px; height: 24px; margin-left: -42px; opacity: 0.88;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35); }   /* tape øverst, dæmpede farver */
+  #bottom .cellb:nth-child(1)::before { top: -9px; transform: rotate(-4deg); background: rgba(196, 170, 120, 0.9); }
+  #bottom .cellb:nth-child(2)::before { top: 41px; transform: rotate(3deg);  background: rgba(150, 170, 140, 0.9); }
+  #bottom .cellb:nth-child(3)::before { top: 7px;  transform: rotate(-2deg); background: rgba(190, 140, 130, 0.9); }
+  #bottom .cellb:nth-child(1) { padding-top: 0; padding-bottom: 6px; }
+  #bottom .cellb:nth-child(2) { padding-top: 52px; padding-bottom: 6px; }
+  #bottom .cellb:nth-child(3) { padding-top: 14px; padding-bottom: 14px; }
+  .cellb .frame { background: #EFE8DA; border-radius: 3px; box-sizing: border-box; overflow: hidden; transition: transform 0.8s ease-in-out;
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.55), 0 2px 5px rgba(0, 0, 0, 0.4); }
+  #F0 { transform: rotate(-1.8deg); --pt: 11px; --pr: 13px; --pb: 40px; --pl: 9px; }
+  #F1 { transform: rotate(1.6deg);  --pt: 13px; --pr: 9px;  --pb: 44px; --pl: 12px; }
+  #F2 { transform: rotate(-1.2deg); --pt: 9px;  --pr: 12px; --pb: 39px; --pl: 14px; }
+  .cellb .frame .pl { top: var(--pt); right: var(--pr); bottom: var(--pb); left: var(--pl); overflow: hidden; }
+  .cellb .frame .pdate { left: 0; right: 0; bottom: 4px; text-align: center; font-family: 'Caveat', cursive; font-size: 30px; font-weight: 600; letter-spacing: 0;
+    color: #5A4A36; text-shadow: none; }
+  body.skema #F0, body.skema #F2 { transform: none; box-shadow: 0 12px 26px rgba(0, 0, 0, 0.55); }   /* skemaet står lige */
+  body.skema #bottom .cellb::before { display: none; }
+  /* skematid: tilbage til de 3 lige store kasser med runde hjørner, som før */
+  body.skema #bottom { top: 556px; bottom: 14px; left: 16px; right: 16px; padding: 0; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  body.skema #bottom .cellb { padding: 0; }
+  body.skema .cellb .frame { background: #15130F; border-radius: var(--r); box-shadow: var(--shadow); }
+  body.skema #F0, body.skema #F1, body.skema #F2 { transform: none; }
+  body.skema .cellb .frame .pl { top: 0; right: 0; bottom: 0; left: 0; }
+  body.skema .cellb .frame .pdate { left: auto; right: 14px; bottom: 10px; text-align: right; font-family: inherit; font-size: 17px; letter-spacing: 0.04em; color: rgba(255, 255, 255, 0.55); text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85); }   /* de to skemaer står på linje */
   /* Skoleskemaer lægger sig oven på to af billederne i de faste tidsrum */
   .sk { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 3; box-sizing: border-box; padding: 14px 10px 12px; display: flex; flex-direction: column;
     background: linear-gradient(rgba(var(--wood), 0.10), rgba(var(--wood), 0.10)), var(--bg); opacity: 0; transition: opacity 1s ease-in-out; }
@@ -779,6 +804,7 @@ function renderCalendar() {
       if (nowAfter) col.insertBefore(nl, nowAfter.nextSibling); else col.insertBefore(nl, head.nextSibling);
     }
     week.appendChild(col);
+    clampEvents(col);   // højst 2 linjer pr. aftale
     // vis så mange aftaler, der er plads til – resten som "+2 mere"
     var more = null, cut = 0;
     while (col.scrollHeight > col.clientHeight + 1) {
@@ -820,6 +846,16 @@ function loadWeather() {
 }
 
 /* ===== Vejret i 3 tidsrum: 8–12, 12–16, 16–20 (efter kl. 20: i morgen) ===== */
+function clampEvents(col) {   // forkorter lange titler med … så en aftale højst fylder 2 linjer
+  col.querySelectorAll('.ev').forEach(function (e) {
+    var x = e.querySelector('.x'); if (!x) return;
+    var cs = getComputedStyle(x), lh = parseFloat(cs.lineHeight) || 25, cp = getComputedStyle(e);
+    var max = 2 * lh + parseFloat(cp.paddingTop) + parseFloat(cp.paddingBottom) + parseFloat(cp.borderTopWidth) + 1.5;
+    if (e.offsetHeight <= max) return;
+    var full = x.textContent, words = full.split(' ');
+    while (words.length > 1 && e.offsetHeight > max) { words.pop(); x.textContent = words.join(' ') + '…'; }
+  });
+}
 function setClock(str) {   // tegner uret ciffer for ciffer og ruller kun de tal, der skifter
   var c = $('clock');
   if (c.getAttribute('data-t') === str) return;
@@ -957,9 +993,11 @@ function loadExtras() {   // én gang i døgnet (serveren gemmer dagens indslag)
 var PHOTOS = [], pIndex = 0, SHOWING = [null, null, null], photosStarted = false;
 var MONTHS = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
 function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
-function photoDate(name) {   // '20240714-001.jpg' → '2024' (kun årstallet)
-  var m = /^(\d{4})\d{4}-/.exec(name || '');
-  return m && +m[1] >= 1900 && +m[1] <= 2100 ? m[1] : '';
+function photoDate(name) {   // '20240714-001.jpg' → 'Sommer 2024' (årstid og år ud fra datoen i filnavnet)
+  var m = /^(\d{4})(\d{2})\d{2}-/.exec(name || '');
+  if (!m || +m[1] < 1900 || +m[1] > 2100) return '';
+  var mo = +m[2], season = mo >= 3 && mo <= 5 ? 'Forår' : mo >= 6 && mo <= 8 ? 'Sommer' : mo >= 9 && mo <= 11 ? 'Efterår' : 'Vinter';
+  return season + ' ' + m[1];
 }
 function loadImage(id) {
   return call('getPhoto', [KEY, TOKEN, id]).then(function (p) {
