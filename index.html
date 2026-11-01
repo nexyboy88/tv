@@ -72,10 +72,10 @@
   .day.gold .dh .nm, .day.gold .ev .tm { color: var(--accent); }
   .day.gold .dwi { background: rgba(var(--wood), 0.22); }
   /* Én linje pr. aftale i 3 faste kolonner: klokkeslæt · bogstaver · tekst */
-  /* Aftaler: klokkeslæt (guld) til venstre, let tekst, tynde skillelinjer. Højst 2 linjer – teksten bryder ind under klokkeslættet */
-  .ev { flex: none; display: block; margin: 0; padding: 5px 0 4px; border-top: 1px solid rgba(239, 235, 228, 0.09); }
+  /* Aftaler: klokkeslæt (guld) til venstre, let tekst, tynde skillelinjer. Højst 2 linjer – linje 2 står lige under linje 1 */
+  .ev { flex: none; display: grid; grid-template-columns: 56px minmax(0, 1fr); column-gap: 5px; align-items: baseline; margin: 0; padding: 5px 0 4px; border-top: 1px solid rgba(239, 235, 228, 0.09); }
   .dh + .ev, .nowline + .ev { border-top: 0; padding-top: 2px; }
-  .ev .tm { float: left; margin-right: 9px; font-size: 18px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 24px; position: relative; top: 0.5px; }
+  .ev .tm { font-size: 18px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 24px; }
   .ev .tm.pill { color: #1B1A18; }   /* klokkeslæt i personens farve */
   .ev .x .nb { white-space: nowrap; }
   .ev .x .fork { display: inline-flex; vertical-align: -2px; margin-right: 6px; color: var(--muted); }
@@ -83,7 +83,7 @@
   .ev .ic .who:nth-child(2):nth-last-child(2), .ev .ic .who:nth-child(3) { margin-left: -12px; box-shadow: 0 0 0 2px #22201D; }   /* sjældent 3 personer: bogstaverne lægger sig lidt ind over hinanden */
   .ev .who { flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     font-size: 17px; font-weight: 800; color: #1B1A18; letter-spacing: 0; }
-  .ev .x { font-size: 21px; font-weight: 500; line-height: 1.17; display: inline; overflow-wrap: anywhere; }   /* let skrift som uret */
+  .ev .x { font-size: 21px; font-weight: 500; line-height: 1.17; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }   /* let skrift som uret */
   .ev.past { opacity: 0.4; }   /* aftaler, der er slut */
   /* NU-linjen i I DAG: lille klokkeslæt i midten, og linjerne løber ud til begge sider – flytter sig i løbet af dagen */
   .nowline { flex: none; display: flex; align-items: center; justify-content: center; gap: 9px; margin: 4px 0; color: var(--accent);
