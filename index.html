@@ -59,6 +59,8 @@
   .dh::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 2px; opacity: 0.9;
     background: linear-gradient(90deg, transparent 0%, var(--accent) 22%, var(--accent) 78%, transparent 100%); }
   .dl { display: flex; align-items: baseline; gap: 10px; min-width: 0; }   /* ugedagen */
+  .dh .dd { margin-left: auto; font-size: 26px; font-weight: 600; line-height: 1; color: var(--muted); white-space: nowrap; letter-spacing: 0.01em; }
+  .day.gold .dh .dd { color: var(--accent); opacity: 0.75; }
   .dh .nm { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: 0.02em; color: var(--text); white-space: nowrap; }
   .dwi { flex: none; margin-left: auto; display: flex; align-items: center; gap: 8px; padding: 5px 14px 5px 10px; border-radius: 999px;
     background: rgba(239, 235, 228, 0.08); }   /* vejret i en lille pille */
@@ -283,8 +285,8 @@ var SKEMAER = {
 var SCHEDULE_SPOTS = ['Emil', 'Lasse'];   // Emil på billedet til venstre, Lasse på billedet til højre
 // Hvornår skemaerne vises (0 = søndag, 1 = mandag … 6 = lørdag)
 var SCHEDULE_TIMES = [
-  { days: [1, 2, 3, 4, 5], from: '07:00', to: '08:00' },   // hverdagsmorgen (1 time)
-  { days: [0, 1, 2, 3, 4], from: '19:00', to: '20:00' }    // aftenen før en skoledag (1 time)
+  { days: [1, 2, 3, 4, 5], from: '06:00', to: '08:00' },   // hverdagsmorgen (2 timer)
+  { days: [0, 1, 2, 3, 4], from: '17:30', to: '19:30' }    // aftenen før en skoledag (2 timer)
 ];
 
 // ===== Temaer: kant, farver og pynt på festdage (vises ikke som tekst – skriv selv i kalenderen) =====
@@ -748,14 +750,7 @@ function renderCalendar() {
     var dl = el('div', 'dl');
     dl.appendChild(el('div', 'nm', i === 0 ? 'I DAG' : WD3[weekdayOf(d)]));
     head.appendChild(dl);
-    var w = WEATHER && WEATHER[key];
-    if (w) {   // vejr i overskriften: ikon og kun højeste temperatur
-      var dwi = el('div', 'dwi');
-      dwi.innerHTML = wxSvg(w.icon, 30, 2);
-      var tt = el('div', 'tt');
-      tt.appendChild(el('b', null, w.max + '°'));
-      dwi.appendChild(tt); head.appendChild(dwi);
-    }
+    head.appendChild(el('div', 'dd', d.getDate() + '/' + (d.getMonth() + 1)));   // dato d/m til højre
     col.appendChild(head);
     var all = byDay[key] || [], nowAfter = null;
     var evs = all;
@@ -815,30 +810,16 @@ function loadWeather() {
 }
 
 /* ===== Vejret i 3 tidsrum: 8–12, 12–16, 16–20 (efter kl. 20: i morgen) ===== */
-var HOURLY = null, WX_SLOTS = [[8, 14], [14, 20]];   // 2 tidsrum i dag
-function renderWx() {
-  var box = $('wxrows'); if (!HOURLY) return;
-  var now = new Date(), H = parseInt(hhmm(now).slice(0, 2), 10);
-  var day = dayKey(now), nowKey = dayKey(now) + 'T' + hhmm(now).slice(0, 2) + ':00';
-  box.innerHTML = '';
-  // 2 tidsrum i dag: ikon og højeste temperatur – det overståede tidsrum nedtones
-  WX_SLOTS.forEach(function (sl) {
-    var codes = {}, tmax = null, n = 0;
-    HOURLY.time.forEach(function (t, i) {
-      var h = parseInt(t.slice(11, 13), 10);
-      if (t.slice(0, 10) !== day || h < sl[0] || h >= sl[1]) return;
-      var c = wInfo(HOURLY.weather_code[i])[0];
-      codes[c] = (codes[c] || 0) + 1;
-      if (tmax == null || HOURLY.temperature_2m[i] > tmax) tmax = HOURLY.temperature_2m[i];
-      n++;
-    });
-    if (!n) return;
-    var icon = Object.keys(codes).sort(function (a, b) { return codes[b] - codes[a]; })[0];   // det mest typiske vejr
-    var c = el('div', 'slot' + (H >= sl[1] ? ' past' : (H >= sl[0] ? ' cur' : '')));
-    c.appendChild(el('div', 'h', sl[0] + '–' + sl[1]));
-    var r = el('div', 'r'); r.innerHTML = wxSvg(icon, 52, 1.6) + '<span>' + Math.round(tmax) + '°</span>';
-    c.appendChild(r);
-    box.appendChild(c);
+var HOURLY = null;
+function renderWx() {   // baren: vejret for i dag og i morgen (ikon og højeste temperatur)
+  var box = $('wxrows'); if (!box || !WEATHER) return;
+  var now = new Date(); box.innerHTML = '';
+  [['I dag', 0], ['I morgen', 1]].forEach(function (sl) {
+    var w = WEATHER[dayKey(addDays(now, sl[1]))]; if (!w) return;
+    var c = el('div', 'slot' + (sl[1] === 0 ? ' cur' : ''));
+    c.appendChild(el('div', 'h', sl[0]));
+    var r = el('div', 'r'); r.innerHTML = wxSvg(w.icon, 52, 1.6) + '<span>' + w.max + '°</span>';
+    c.appendChild(r); box.appendChild(c);
   });
 }
 
