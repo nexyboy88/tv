@@ -58,10 +58,17 @@
   .dl { display: flex; align-items: baseline; gap: 10px; min-width: 0; }   /* ugedag og dato på samme linje */
   .dh .nm { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: 0.02em; color: var(--text); white-space: nowrap; }
   .dh .num { font-size: 20px; font-weight: 600; color: var(--muted); white-space: nowrap; }
-  .dwi { flex: 1; display: flex; justify-content: flex-end; align-items: center; }
+  .dwi { flex: none; margin-left: auto; display: flex; align-items: center; gap: 8px; padding: 5px 14px 5px 10px; border-radius: 999px;
+    background: rgba(239, 235, 228, 0.08); }   /* vejret i en lille pille */
   .dwi svg { flex: none; display: block; }
   .tt { display: flex; align-items: center; line-height: 1; white-space: nowrap; }
   .tt b { font-size: 27px; font-weight: 700; }
+  /* Weekend og helligdage: guldbaggrund */
+  .day.gold { background: rgba(214, 165, 95, 0.25); }
+  .day.gold .dh { border-bottom-color: rgba(214, 165, 95, 0.55); }
+  .day.gold .dh .nm, .day.gold .ev .tm { color: var(--accent); }
+  .day.gold .dh .num { color: rgba(239, 235, 228, 0.62); }
+  .day.gold .dwi { background: rgba(214, 165, 95, 0.26); }
   /* Én linje pr. aftale i 3 faste kolonner: klokkeslæt · bogstaver · tekst */
   .ev { flex: none; display: grid; grid-template-columns: 62px minmax(0, 1fr); column-gap: 4px; align-items: baseline; }   /* klokkeslæt · tekst */
   .ev .tm { font-size: 21px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -338,6 +345,20 @@ var ICONS = {
 function svg(name, size, color, sw) {
   return '<svg aria-hidden="true" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="' + (color || 'currentColor') +
     '" stroke-width="' + (sw || 1.75) + '" stroke-linecap="round" stroke-linejoin="round">' + (ICONS[name] || ICONS.star) + '</svg>';
+}
+// Farvede vejrikoner: sol = guld, regn = blå, sne = isblå, sky = dæmpet sand (følger temaet)
+function wxSvg(name, size, sw) {
+  var SKY = 'style="stroke:var(--soft);fill:var(--soft);fill-opacity:0.14"', SKYLINE = 'style="stroke:var(--soft)"';
+  var CLOUD = '<path ' + SKY + ' d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>', body;
+  if (name === 'rain') body = CLOUD + '<path stroke="#7FB8E6" d="M16 14v6M8 14v6M12 16v6"/>';
+  else if (name === 'snow') body = CLOUD + '<path stroke="#E3EDF6" stroke-width="2.8" d="M8 15h.01M8 19h.01M12 17h.01M12 21h.01M16 15h.01M16 19h.01"/>';
+  else if (name === 'sun') body = '<circle cx="12" cy="12" r="4" stroke="#E8B04B" fill="#E8B04B" fill-opacity="0.25"/>' +
+    '<path stroke="#E8B04B" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
+  else if (name === 'partly') body = '<path stroke="#E8B04B" d="M12 2v2M4.93 4.93l1.41 1.41M20 12h2M19.07 4.93l-1.41 1.41M15.947 12.65a4 4 0 0 0-5.925-4.128"/>' +
+    '<path ' + SKY + ' d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/>';
+  else body = '<path ' + SKY + ' d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>';
+  return '<svg aria-hidden="true" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke-width="' + (sw || 1.75) +
+    '" stroke-linecap="round" stroke-linejoin="round">' + body + '</svg>';
 }
 // Dæmpede farver til ikonerne nederst til venstre (vejr og mærkedage)
 var ICON_COLORS = {
@@ -702,6 +723,15 @@ function isDinner(ev) {   // aftensmad = starter kl. 18.00 og slutter senest kl.
   var mins = (ev.end - ev.start) / 60000;
   return hhmm(new Date(ev.start)) === '18:00' && mins > 0 && mins <= 60;
 }
+/* Guldbaggrund: lørdag, søndag og alle danske helligdage + juleaften, nytårsaften og grundlovsdag */
+function isGoldDay(key) {
+  var y = +key.slice(0, 4), m = +key.slice(5, 7), dd = +key.slice(8, 10), t = Date.UTC(y, m - 1, dd), wd = new Date(t).getUTCDay();
+  if (wd === 0 || wd === 6) return true;
+  var md = m * 100 + dd;
+  if (md === 101 || md === 605 || md === 1224 || md === 1225 || md === 1226 || md === 1231) return true;   // nytårsdag, grundlovsdag, jul og nytårsaften
+  var off = Math.round((t - easterUTC(y)) / D1);
+  return off === -3 || off === -2 || off === 0 || off === 1 || off === 39 || off === 49 || off === 50;   // skærtorsdag, langfredag, påske, kr. himmelfart, pinse
+}
 function renderCalendar() {
   var now = new Date(), byDay = {}, seen = {};
   EVENTS.forEach(function (ev) {
@@ -712,7 +742,7 @@ function renderCalendar() {
   Object.keys(byDay).forEach(function (k) { byDay[k].sort(function (a, b) { return a.start - b.start; }); });   // altid i tidsrækkefølge
   var week = $('week'); week.innerHTML = '';
   for (var i = 0; i < 6; i++) {   // 6 dage: 3 øverst, 3 nederst
-    var d = addDays(now, i), key = dayKey(d), col = el('div', 'day' + (i === 0 ? ' today' : '') + (i > 0 && !(byDay[key] || []).length ? ' free' : '')), head = el('div', 'dh');
+    var d = addDays(now, i), key = dayKey(d), col = el('div', 'day' + (i === 0 ? ' today' : '') + (isGoldDay(key) ? ' gold' : '') + (i > 0 && !(byDay[key] || []).length ? ' free' : '')), head = el('div', 'dh');
     var dl = el('div', 'dl');
     dl.appendChild(el('div', 'nm', i === 0 ? 'I DAG' : WD3[weekdayOf(d)]));
     dl.appendChild(el('div', 'num', parseInt(key.slice(8), 10) + '/' + parseInt(key.slice(5, 7), 10)));   // fx 5/11
@@ -720,10 +750,10 @@ function renderCalendar() {
     var w = WEATHER && WEATHER[key];
     if (w) {   // vejr i overskriften: ikon og kun højeste temperatur
       var dwi = el('div', 'dwi');
-      dwi.innerHTML = svg(w.icon, 30, ICON_COLORS[w.icon] || 'currentColor', 2);
+      dwi.innerHTML = wxSvg(w.icon, 30, 2);
       var tt = el('div', 'tt');
       tt.appendChild(el('b', null, w.max + '°'));
-      head.appendChild(dwi); head.appendChild(tt);
+      dwi.appendChild(tt); head.appendChild(dwi);
     }
     col.appendChild(head);
     var all = byDay[key] || [], nowAfter = null;
@@ -758,7 +788,7 @@ function renderCalendar() {
 /* ===== Vejr (Open-Meteo, gratis) – 7 dage i kalenderen ===== */
 function wInfo(code) {
   if (code <= 1) return ['sun', code === 0 ? 'Klart' : 'Mest klart'];
-  if (code <= 3) return ['cloud', code === 2 ? 'Delvis skyet' : 'Overskyet'];
+  if (code <= 3) return [code === 2 ? 'partly' : 'cloud', code === 2 ? 'Delvis skyet' : 'Overskyet'];
   if (code <= 48) return ['cloud', 'Tåge'];
   if ((code >= 71 && code <= 77) || code === 85 || code === 86) return ['snow', 'Sne'];
   if (code >= 95) return ['rain', 'Torden'];
@@ -805,7 +835,7 @@ function renderWx() {
     var icon = Object.keys(codes).sort(function (a, b) { return codes[b] - codes[a]; })[0];   // det mest typiske vejr
     var c = el('div', 'slot' + (H >= sl[1] ? ' past' : (H >= sl[0] ? ' cur' : '')));
     c.appendChild(el('div', 'h', sl[0] + '–' + sl[1]));
-    var r = el('div', 'r'); r.innerHTML = svg(icon, 52, ICON_COLORS[icon] || 'currentColor', 1.6) + '<span>' + Math.round(tmax) + '°</span>';
+    var r = el('div', 'r'); r.innerHTML = wxSvg(icon, 52, 1.6) + '<span>' + Math.round(tmax) + '°</span>';
     c.appendChild(r);
     box.appendChild(c);
   });
