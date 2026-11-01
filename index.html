@@ -57,18 +57,18 @@
   .dh { display: flex; align-items: center; gap: 12px; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px solid rgba(239, 235, 228, 0.12); flex: none; }
   .dl { display: flex; align-items: baseline; gap: 10px; min-width: 0; }   /* ugedag og dato på samme linje */
   .dh .nm { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: 0.02em; color: var(--text); white-space: nowrap; }
-  .dh .num { font-size: 20px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .dh .num { font-size: 23px; font-weight: 600; color: var(--muted); white-space: nowrap; }   /* datoen: 15 % større */
   .dwi { flex: none; margin-left: auto; display: flex; align-items: center; gap: 8px; padding: 5px 14px 5px 10px; border-radius: 999px;
     background: rgba(239, 235, 228, 0.08); }   /* vejret i en lille pille */
   .dwi svg { flex: none; display: block; }
   .tt { display: flex; align-items: center; line-height: 1; white-space: nowrap; }
   .tt b { font-size: 27px; font-weight: 700; }
   /* Weekend og helligdage: guldbaggrund */
-  .day.gold { background: rgba(214, 165, 95, 0.25); }
-  .day.gold .dh { border-bottom-color: rgba(214, 165, 95, 0.55); }
+  .day.gold { background: rgba(var(--wood), 0.16); }   /* præcis samme farve som båndet (følger også sæsonfarven) */
+  .day.gold .dh { border-bottom-color: rgba(var(--wood), 0.40); }
   .day.gold .dh .nm, .day.gold .ev .tm { color: var(--accent); }
   .day.gold .dh .num { color: rgba(239, 235, 228, 0.62); }
-  .day.gold .dwi { background: rgba(214, 165, 95, 0.26); }
+  .day.gold .dwi { background: rgba(var(--wood), 0.22); }
   /* Én linje pr. aftale i 3 faste kolonner: klokkeslæt · bogstaver · tekst */
   .ev { flex: none; display: grid; grid-template-columns: 62px minmax(0, 1fr); column-gap: 4px; align-items: baseline; }   /* klokkeslæt · tekst */
   .ev .tm { font-size: 21px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -103,8 +103,8 @@
   .txt { flex: 0 1 auto; min-height: 0; text-align: center; font-size: 24px; font-weight: 500; line-height: 1.12; overflow: hidden; transition: opacity 0.6s; }
   .txt.fade { opacity: 0; }
   .txt .a { color: var(--muted); }
-  /* Båndet: én ting ad gangen – 5 slags indslag skifter hver halve time, samme indslag hele dagen */
-  .seg.one { position: absolute; top: 0; bottom: 0; left: 50%; width: 1180px; margin-left: -590px; align-items: center; justify-content: center; gap: 4px; padding: 0; text-align: center; transition: opacity 1.2s ease, transform 1.2s ease; }
+  /* Båndet: én ting ad gangen – skifter mellem de 5 slags indslag hvert 2. minut, på samme tid som de 3 billeder */
+  .seg.one { position: absolute; top: 0; bottom: 0; left: 50%; width: 1180px; margin-left: -590px; align-items: center; justify-content: center; gap: 4px; padding: 0; text-align: center; transition: opacity 2.4s ease-in-out, transform 2.4s ease-in-out; }
   .seg.one.fade { opacity: 0; transform: translateY(6px); }   /* blødt skift: fader ud og glider en anelse */
   .seg.one .txt { font-size: 28px; font-weight: 700; line-height: 1.1; flex: none; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: none; }   /* altid én linje */
   .seg.one .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; font-size: 23px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; flex: none; }
@@ -252,8 +252,7 @@ try { if (KEY) localStorage.setItem('fs_key', KEY); } catch (e) {}
 var URL_TOKEN = QS.get('t') || '';
 var LAT = 55.49, LON = 9.47;          // Kolding
 var PHOTO_SECONDS = 120;             // alle tre billeder skifter samtidig hvert 2. minut (fade 5 sek., zoom 10 sek.)
-var STRIP_SECONDS = 60;               // båndet tjekker hvert minut og skifter hver halve time mellem de 5 slags indslag
-var STRIP_MINUTES = 30;               // hvor længe hvert indslag står (samme vits, citat osv. hele dagen – nye ved midnat)
+// Båndet skifter indslag (vits, citat, vidste du, på denne dag, fødselsdag) på samme tid som billederne: hvert PHOTO_SECONDS.
 // Sort skærm om natten. days = de aftener, det gælder fra (0 = søndag … 6 = lørdag). '24:00' = fra midnat.
 var NIGHT = [];   // ingen nattilstand: skærmen kører 100 % hele døgnet
 // (tidligere: søn–tors 22–06 og fre–lør 00–08 – kan sættes ind igen, fx { days: [0, 1, 2, 3, 4], from: '22:00', to: '06:00' })
@@ -842,7 +841,7 @@ function renderWx() {
 }
 
 /* ===== Båndet: tre felter med dagens vits · citat/kloge ord · vidste du/tanke ===== */
-var stripStep = 0, stripDay = null;
+var stripIdx = Math.floor(Date.now() / (PHOTO_SECONDS * 1000)), stripDay = null;   // hvilket indslag der vises nu (tæller op ved hvert skift)
 var STRIP_KINDS = {
   joke:    { label: 'DAGENS VITS',  icon: 'smile' },
   quoteDk: { label: 'DAGENS CITAT', icon: 'quote' },
@@ -872,7 +871,6 @@ function fillStrip(q, kind, v) {
     q.textContent = v;
   }
 }
-function stripSlot() { return Math.floor(Date.now() / (STRIP_MINUTES * 60000)); }
 function stripItem(k) {   // dagens indslag: fra Idag.gs – ellers fra Indhold.gs, hvis den ikke er hentet endnu
   if (EXTRAS && EXTRAS[k]) return EXTRAS[k];
   var l = k === 'quote' ? (QUOTES_DK.length ? QUOTES_DK : QUOTES_WORLD) : STRIP_LISTS[k];
@@ -885,7 +883,7 @@ function renderStrip() {
     return k2.length ? k2[dayNo() % k2.length] : null;
   }).filter(Boolean);
   if (!kinds.length) return;
-  var n = stripSlot() % kinds.length, key = kinds[n], v = stripItem(key);
+  var n = stripIdx % kinds.length, key = kinds[n], v = stripItem(key);
   var seg = document.querySelector('.seg.one'), q = $('t0'), sub = $('s0'), lab = STRIP_KINDS[key].label;
   sub.className = 'sub'; sub.textContent = '';
   if (key === 'joke') { q.textContent = v[0]; sub.textContent = v[1] || ''; sub.className = 'sub joke'; }
@@ -918,15 +916,17 @@ function renderStrip() {
   var ss = parseFloat(getComputedStyle(sub).fontSize);
   while (sub.scrollWidth > sub.clientWidth + 1 && ss > 18) { ss -= 1; sub.style.fontSize = ss + 'px'; }
 }
-function nextStrip() {
+function nextStrip() { renderStrip(); }   // (bruges, når skærmen vågner)
+function rotateStrip() {   // næste indslag: fader ud, skifter midt i billedernes overgang og fader ind igen
   if (document.body.classList.contains('night')) return;
-  var slot = stripSlot();
-  if (slot === stripStep) return;   // samme halve time: behold indslaget
-  stripStep = slot;
   var seg = document.querySelector('.seg.one');
   seg.classList.add('fade');
-  setTimeout(function () { renderStrip(); seg.classList.remove('fade'); }, 1200);
+  setTimeout(function () { stripIdx++; renderStrip(); seg.classList.remove('fade'); }, 2400);
 }
+/* Ét fælles ur: billeder og bånd skifter på samme tid hvert 2. minut */
+var rotTimer = null;
+function rotateAll() { if (photosStarted) showSet(); rotateStrip(); }
+function startRotation() { clearInterval(rotTimer); rotTimer = setInterval(rotateAll, PHOTO_SECONDS * 1000); }
 function loadExtras() {   // én gang i døgnet (serveren gemmer dagens indslag)
   if (EXTRAS && EXTRAS.date === dayKey(new Date())) return;
   if (!TOKEN) return;
@@ -987,7 +987,7 @@ function showSet() {
 }
 function startPhotos() {
   photosStarted = true;
-  prefetchSet().then(function () { showSet(); setInterval(showSet, PHOTO_SECONDS * 1000); });
+  prefetchSet().then(function () { showSet(); startRotation(); });   // første billedsæt: uret starter forfra, så bånd og billeder følges ad
 }
 
 /* ===== Skoleskemaer på billedpladserne i de faste tidsrum ===== */
@@ -1072,9 +1072,9 @@ function startData() {
 
 /* ===== Start ===== */
 tick(); setInterval(tick, 1000);
-renderCalendar(); stripStep = stripSlot(); renderStrip();
+renderCalendar(); renderStrip();
 loadExtras(); setInterval(loadExtras, 60 * 1000);   // tjekker hvert minut – henter nye indslag lige efter midnat
-setInterval(nextStrip, STRIP_SECONDS * 1000);
+startRotation();   // billeder og bånd skifter sammen hvert 2. minut
 setInterval(function () { renderCalendar(); renderWx(); }, 5 * 60 * 1000);
 loadWeather(); setInterval(loadWeather, 30 * 60 * 1000);
 if (TOKEN) startData(); else showPin();
