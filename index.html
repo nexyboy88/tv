@@ -54,7 +54,10 @@
   #week { height: 100%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: 10px; }   /* 6 dage på én række */
   .day { display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; min-width: 0; min-height: 0; overflow: hidden;
     border-radius: var(--r); background: rgba(239, 235, 228, 0.07); }   /* de 3 øverste dage (også i dag) */
-  .dh { display: flex; align-items: center; gap: 12px; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px solid rgba(239, 235, 228, 0.12); flex: none; }
+  .dh { position: relative; display: flex; align-items: center; gap: 12px; padding-bottom: 10px; margin-bottom: 4px; flex: none; }
+  /* Skillelinjen under overskriften: hele kolonnens bredde, 2 px, accentfarve i midten og blød udtoning i begge ender */
+  .dh::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 2px; opacity: 0.9;
+    background: linear-gradient(90deg, transparent 0%, var(--accent) 22%, var(--accent) 78%, transparent 100%); }
   .dl { display: flex; align-items: baseline; gap: 10px; min-width: 0; }   /* ugedag og dato på samme linje */
   .dh .nm { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: 0.02em; color: var(--text); white-space: nowrap; }
   .dh .num { font-size: 23px; font-weight: 600; color: var(--muted); white-space: nowrap; }   /* datoen: 15 % større */
@@ -65,7 +68,6 @@
   .tt b { font-size: 27px; font-weight: 700; }
   /* Weekend og helligdage: guldbaggrund */
   .day.gold { background: rgba(var(--wood), 0.16); }   /* præcis samme farve som båndet (følger også sæsonfarven) */
-  .day.gold .dh { border-bottom-color: rgba(var(--wood), 0.40); }
   .day.gold .dh .nm, .day.gold .ev .tm { color: var(--accent); }
   .day.gold .dh .num { color: rgba(239, 235, 228, 0.62); }
   .day.gold .dwi { background: rgba(var(--wood), 0.22); }
@@ -83,7 +85,9 @@
   .ev.past { opacity: 0.4; }   /* aftaler, der er slut */
   /* NU-linjen i I DAG: står mellem det, der er sket, og det, der kommer – flytter sig i løbet af dagen */
   .nowline { flex: none; display: flex; align-items: center; gap: 10px; margin: 2px 0; color: var(--accent); font-size: 16px; font-weight: 800; letter-spacing: 0.18em; }
-  .nowline::after { content: ''; flex: 1; height: 2px; border-radius: 2px; background: var(--accent); opacity: 0.8; }
+  .nowline::before { content: ''; flex: none; width: 11px; height: 11px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(var(--wood), 0.40); filter: drop-shadow(0 0 5px var(--accent)); }   /* lysende "nu"-prik */
+  .nowline::after { content: ''; flex: 1; height: 2px; border-radius: 2px; opacity: 0.9; background: linear-gradient(90deg, var(--accent) 0%, transparent 100%); }
   .ev.dinner .who { background: #E6C34A; }   /* aftensmad: bestik-ikon i madfarve */
   .day.free .dh { opacity: 0.42; }   /* dage uden aftaler nedtones */
   .day.free::after { content: 'Ingen aftaler'; font-size: 22px; font-weight: 600; color: var(--muted); opacity: 0.45; }
