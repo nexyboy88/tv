@@ -102,6 +102,11 @@
   .seg.clk { position: absolute; left: 38px; top: 0; bottom: 0; justify-content: center; overflow: visible; padding: 0; }   /* uret flugter med dagenes tekst */
   .seg.clk + .seg { padding-left: 30px; }   /* lidt luft til det store ur */
   .seg:last-child { padding-right: 0; }
+  /* Uret: et ciffer, der skifter, kører op og ud – og det nye glider ind nedefra */
+  #clock .cd { position: relative; display: inline-block; overflow: hidden; height: 1.1em; line-height: 1.1em; vertical-align: top; }
+  #clock .cd.col { width: 0.3em; text-align: center; }
+  #clock .cv { display: inline-block; transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.9s ease; }
+  #clock .cv.old { position: absolute; left: 0; top: 0; }
   #clock { font-size: 84px; font-weight: 600; line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; text-align: center; transform: translateY(-4px); }   /* tal har ingen underlængder – løftes en anelse */
   .sh2 { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--accent); flex: none; }
   .sh2 .label { color: var(--accent); font-size: 19px; }
@@ -678,12 +683,12 @@ function tick() {
     if (!night) { SEASON = null; nextStrip(); renderCalendar(); }   // vågn op: frisk sæson, bånd og kalender
     else FX.start(null);
   }
-  if (night) { $('clock').textContent = hhmm(new Date()); return; }   // om natten: kun uret kører, resten står stille
+  if (night) { setClock(hhmm(new Date())); return; }   // om natten: kun uret kører, resten står stille
   pixelShift();
   applyTheme();
   if (new Date().getSeconds() === 0 || !SEASON) applySeason();
   var now = new Date();
-  $('clock').textContent = hhmm(now);
+  setClock(hhmm(now));
   if (hhmm(now) === '00:00' && now.getSeconds() < 2) renderCalendar();   // ny dag
   else if (now.getSeconds() === 0) {
     if (now.getMinutes() % 5 === 0) renderCalendar();   // flytter NU-linjen og nedtoner det, der er slut
@@ -810,6 +815,33 @@ function loadWeather() {
 }
 
 /* ===== Vejret i 3 tidsrum: 8–12, 12–16, 16–20 (efter kl. 20: i morgen) ===== */
+function setClock(str) {   // tegner uret ciffer for ciffer og ruller kun de tal, der skifter
+  var c = $('clock');
+  if (c.getAttribute('data-t') === str) return;
+  var first = !c.getAttribute('data-t');
+  if (c.children.length !== str.length || first) {
+    c.innerHTML = '';
+    for (var i = 0; i < str.length; i++) {
+      var cd = el('span', 'cd' + (str[i] === ':' ? ' col' : '')), cv = el('span', 'cv', str[i]);
+      cd.appendChild(cv); c.appendChild(cd);
+    }
+    c.setAttribute('data-t', str); return;
+  }
+  var prev = c.getAttribute('data-t'); c.setAttribute('data-t', str);
+  for (var j = 0; j < str.length; j++) {
+    if (str[j] === prev[j]) continue;
+    (function (cd, ch) {
+      var old = cd.lastChild, nw = el('span', 'cv', ch);
+      old.classList.add('old');
+      nw.style.transform = 'translateY(100%)'; nw.style.opacity = '0';
+      cd.appendChild(nw);
+      void nw.offsetWidth;   // start-position låses, før bevægelsen
+      old.style.transform = 'translateY(-100%)'; old.style.opacity = '0';
+      nw.style.transform = 'translateY(0)'; nw.style.opacity = '1';
+      setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, 1000);
+    })(c.children[j], str[j]);
+  }
+}
 var HOURLY = null;
 function renderWx() {   // baren: vejret for i dag og i morgen (ikon og højeste temperatur)
   var box = $('wxrows'); if (!box || !WEATHER) return;
@@ -1060,7 +1092,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(function (
 loadExtras(); setInterval(loadExtras, 60 * 1000);   // tjekker hvert minut – henter nye indslag lige efter midnat
 startRotation();   // billeder og bånd skifter sammen hvert 2. minut
 setInterval(function () { renderCalendar(); renderWx(); }, 5 * 60 * 1000);
-loadWeather(); setInterval(loadWeather, 30 * 60 * 1000);
+loadWeather(); setInterval(loadWeather, 60 * 60 * 1000);
 if (TOKEN) startData(); else showPin();
 </script>
 
