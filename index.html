@@ -72,8 +72,8 @@
   .day.gold .dh .nm, .day.gold .ev .tm { color: var(--accent); }
   .day.gold .dwi { background: rgba(var(--wood), 0.22); }
   /* Én linje pr. aftale i 3 faste kolonner: klokkeslæt · bogstaver · tekst */
-  .ev { flex: none; display: grid; grid-template-columns: 62px minmax(0, 1fr); column-gap: 4px; align-items: baseline; }   /* klokkeslæt · tekst */
-  .ev .tm { font-size: 21px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ev { flex: none; display: block; margin-bottom: 4px; }   /* klokkeslæt til venstre – teksten fylder ud under uret, når den bryder */
+  .ev .tm { float: left; margin-right: 9px; font-size: 20px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 25px; position: relative; top: 1.5px; }
   .ev .tm.pill { color: #1B1A18; }   /* klokkeslæt i personens farve */
   .ev .x .nb { white-space: nowrap; }
   .ev .x .fork { display: inline-flex; vertical-align: -2px; margin-right: 6px; color: var(--muted); }
@@ -81,7 +81,7 @@
   .ev .ic .who:nth-child(2):nth-last-child(2), .ev .ic .who:nth-child(3) { margin-left: -12px; box-shadow: 0 0 0 2px #22201D; }   /* sjældent 3 personer: bogstaverne lægger sig lidt ind over hinanden */
   .ev .who { flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     font-size: 17px; font-weight: 800; color: #1B1A18; letter-spacing: 0; }
-  .ev .x { font-size: 25px; font-weight: 700; line-height: 1.12; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow-wrap: anywhere; }   /* højst 3 linjer */
+  .ev .x { font-size: 22px; font-weight: 500; line-height: 1.2; display: inline; overflow-wrap: anywhere; }   /* let skrift som uret */
   .ev.past { opacity: 0.4; }   /* aftaler, der er slut */
   /* NU-linjen i I DAG: lille klokkeslæt i midten, og linjerne løber ud til begge sider – flytter sig i løbet af dagen */
   .nowline { flex: none; display: flex; align-items: center; justify-content: center; gap: 9px; margin: 4px 0; color: var(--accent);
