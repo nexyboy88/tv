@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <base target="_top">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@200;300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap">
 <style>
   /* ===== Nordisk mørkt tema (lyst tema kan vælges med THEME) ===== */
   :root { --wood: 164, 122, 78; --r: 14px; --r-sm: 8px; }   /* samme runde hjørner overalt */
@@ -29,7 +29,7 @@
   html, body { margin: 0; height: 100%; background: #1B1A18; overflow: hidden; cursor: none; }
   body { background: var(--bg, #1B1A18); }   /* samme farve som skærmen helt ud i kanten */
   #stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; overflow: hidden;
-    background: var(--bg); color: var(--text); font-family: 'Albert Sans', system-ui, sans-serif;
+    background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif;
     font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
   /* I dag-kolonnen: samme farve som båndet fra top til bund (i to stykker, så båndet ikke bliver dobbelt farvet) */
   .colbg { position: absolute; left: 0; width: 280px; background: rgba(var(--wood), 0.16); }
@@ -81,11 +81,9 @@
     font-size: 17px; font-weight: 800; color: #1B1A18; letter-spacing: 0; }
   .ev .x { font-size: 25px; font-weight: 700; line-height: 1.12; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow-wrap: anywhere; }   /* højst 3 linjer */
   .ev.past { opacity: 0.4; }   /* aftaler, der er slut */
-  /* NU-linjen i I DAG: står mellem det, der er sket, og det, der kommer – flytter sig i løbet af dagen */
-  .nowline { flex: none; display: flex; align-items: center; gap: 10px; margin: 2px 0; color: var(--accent); font-size: 16px; font-weight: 800; letter-spacing: 0.18em; }
-  .nowline::before { content: ''; flex: none; width: 11px; height: 11px; border-radius: 50%; background: var(--accent);
-    box-shadow: 0 0 0 4px rgba(var(--wood), 0.40); filter: drop-shadow(0 0 5px var(--accent)); }   /* lysende "nu"-prik */
-  .nowline::after { content: ''; flex: 1; height: 2px; border-radius: 2px; opacity: 0.9; background: linear-gradient(90deg, var(--accent) 0%, transparent 100%); }
+  /* NU-linjen i I DAG: samme streg som under dagsoverskrifterne – flytter sig i løbet af dagen */
+  .nowline { flex: none; height: 2px; margin: 6px 0; border-radius: 2px; opacity: 0.9;
+    background: linear-gradient(90deg, transparent 0%, var(--accent) 22%, var(--accent) 78%, transparent 100%); }
   .ev.dinner .who { background: #E6C34A; }   /* aftensmad: bestik-ikon i madfarve */
   .day.free .dh { opacity: 0.42; }   /* dage uden aftaler nedtones */
   .day.free::after { content: 'Ingen aftaler'; font-size: 22px; font-weight: 600; color: var(--muted); opacity: 0.45; }
@@ -684,7 +682,6 @@ function tick() {
   if (hhmm(now) === '00:00' && now.getSeconds() < 2) renderCalendar();   // ny dag
   else if (now.getSeconds() === 0) {
     if (now.getMinutes() % 5 === 0) renderCalendar();   // flytter NU-linjen og nedtoner det, der er slut
-    else { var nl = document.querySelector('.nowline'); if (nl) nl.textContent = 'NU ' + hhmm(now); }
   }
   if (hhmm(now) === '03:00' && now.getSeconds() < 2) location.reload();
   checkSchedule();   // skift præcis på klokkeslæt
@@ -769,7 +766,7 @@ function renderCalendar() {
       if (i === 0 && !ev.allDay && ev.start <= now.getTime()) nowAfter = e;   // NU-linjen kommer efter den seneste aftale, der er gået i gang
     });
     if (i === 0) {
-      var nl = el('div', 'nowline', 'NU ' + hhmm(now));
+      var nl = el('div', 'nowline');
       if (nowAfter) col.insertBefore(nl, nowAfter.nextSibling); else col.insertBefore(nl, head.nextSibling);
     }
     week.appendChild(col);
@@ -1074,6 +1071,7 @@ function startData() {
 /* ===== Start ===== */
 tick(); setInterval(tick, 1000);
 renderCalendar(); renderStrip();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { renderCalendar(); renderStrip(); });   // mål teksten igen, når skrifttypen er klar
 loadExtras(); setInterval(loadExtras, 60 * 1000);   // tjekker hvert minut – henter nye indslag lige efter midnat
 startRotation();   // billeder og bånd skifter sammen hvert 2. minut
 setInterval(function () { renderCalendar(); renderWx(); }, 5 * 60 * 1000);
