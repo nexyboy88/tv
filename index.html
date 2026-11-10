@@ -52,6 +52,11 @@
   /* ===== Øverst: 6 dage som kort – i dag, i morgen, i overmorgen øverst og de næste 3 under ===== */
   #top { position: absolute; left: 16px; right: 16px; top: 14px; height: 472px; }
   #week { height: 100%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: 10px; }   /* 6 dage på én række */
+  /* Sidste kolonne: 2 dage over hinanden (dag 6 og 7), så der vises 7 dage i alt */
+  .split { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
+  .split .day { flex: 1 1 0; padding: 10px 16px; }
+  .split .day .dh { padding-bottom: 8px; margin-bottom: 2px; }
+  .split .ev .x { display: block; white-space: nowrap; text-overflow: ellipsis; -webkit-line-clamp: unset; }   /* dag 6 og 7: kun 1 linje pr. aftale, ellers … */
   .day { display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; min-width: 0; min-height: 0; overflow: hidden;
     border-radius: var(--r); background: rgba(239, 235, 228, 0.07); }   /* de 3 øverste dage (også i dag) */
   .dh { position: relative; display: flex; align-items: center; gap: 12px; padding-bottom: 10px; margin-bottom: 4px; flex: none; }
@@ -781,7 +786,8 @@ function renderCalendar() {
   });
   Object.keys(byDay).forEach(function (k) { byDay[k].sort(function (a, b) { return a.start - b.start; }); });   // altid i tidsrækkefølge
   var week = $('week'); week.innerHTML = '';
-  for (var i = 0; i < 6; i++) {   // 6 dage: 3 øverst, 3 nederst
+  var split = null;
+  for (var i = 0; i < 7; i++) {   // 7 dage: 5 kolonner + sidste kolonne delt i to (dag 6 og 7 over hinanden)
     var d = addDays(now, i), key = dayKey(d), col = el('div', 'day' + (i === 0 ? ' today' : '') + (isGoldDay(key) ? ' gold' : '') + (i > 0 && !(byDay[key] || []).length ? ' free' : '')), head = el('div', 'dh');
     var dl = el('div', 'dl');
     dl.appendChild(el('div', 'nm', i === 0 ? 'I DAG' : WD3[weekdayOf(d)]));
@@ -804,7 +810,10 @@ function renderCalendar() {
       var nl = el('div', 'nowline', hhmm(now));
       if (nowAfter) col.insertBefore(nl, nowAfter.nextSibling); else col.insertBefore(nl, head.nextSibling);
     }
-    week.appendChild(col);
+    if (i >= 5) {
+      if (!split) { split = el('div', 'split'); week.appendChild(split); }
+      split.appendChild(col);
+    } else week.appendChild(col);
     clampEvents(col);   // højst 2 linjer pr. aftale
     // vis så mange aftaler, der er plads til – resten som "+2 mere"
     var more = null, cut = 0;
