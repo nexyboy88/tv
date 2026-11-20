@@ -144,6 +144,21 @@
   .seg.one .dots i.on { background: var(--accent); opacity: 1; }
   .txt .who { color: var(--muted); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+  /* ===== Morgen (skematid før kl. 12): køretider + "i dag" i stedet for vits, citat osv. ===== */
+  .seg.morning { position: absolute; top: 0; bottom: 0; left: 50%; width: 1180px; margin-left: -590px; padding: 0; display: none; flex-direction: row; align-items: center; justify-content: center; gap: 18px; }
+  body.morgen .seg.one { display: none; }
+  body.morgen .seg.morning { display: flex; }
+  .mbox { height: 84px; box-sizing: border-box; background: var(--chip); border-radius: var(--r); padding: 4px 26px; display: flex; flex-direction: column; justify-content: center; gap: 3px; min-width: 0; }
+  .mbox .mh { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; letter-spacing: 0.18em; color: var(--accent); text-transform: uppercase; line-height: 1; }
+  .mbox .mh .md { color: var(--muted); letter-spacing: 0.1em; }
+  .mbox .mg { display: grid; align-items: baseline; column-gap: 14px; row-gap: 1px; font-size: 24px; font-weight: 600; line-height: 1.05; white-space: nowrap; }
+  .mbox.drive .mg { grid-template-columns: auto auto; column-gap: 34px; }
+  .mbox.day .mg { grid-template-columns: auto auto minmax(0, auto); }
+  .mbox .tm { color: var(--accent); font-size: 27px; text-align: right; font-variant-numeric: tabular-nums; }
+  .mbox .yr { color: var(--accent); font-variant-numeric: tabular-nums; }
+  .mbox .mi { color: var(--muted); align-self: center; display: flex; }
+  .mbox .tx { overflow: hidden; text-overflow: ellipsis; max-width: 600px; }
+
   /* ===== Bunden: 3 familiebilleder fra Google Fotos ===== */
   #bottom { position: absolute; left: 16px; right: 16px; top: 606px; bottom: 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   .cellb { min-width: 0; min-height: 0; display: flex; }
@@ -262,6 +277,7 @@
       <div id="clock">--:--</div>
     </div>
     <div class="seg one"><div class="ic2" id="i0" style="display:none"></div><div class="col"><div class="lb"><span id="l0"></span><span class="dots" id="dots"></span></div><div class="txt" id="t0"></div><div class="sub" id="s0"></div></div></div>
+    <div class="seg morning" id="morning"></div>
     <div class="wx" id="wxrows"></div>
   </div>
 
@@ -996,7 +1012,7 @@ function startRotation() { clearInterval(rotTimer); rotTimer = setInterval(rotat
 function loadExtras() {   // én gang i døgnet (serveren gemmer dagens indslag)
   if (EXTRAS && EXTRAS.date === dayKey(new Date())) return;
   if (!TOKEN) return;
-  call('getTodayExtras', [KEY, TOKEN]).then(function (x) { if (x) { EXTRAS = x; renderStrip(); } }, function () {});
+  call('getTodayExtras', [KEY, TOKEN]).then(function (x) { if (x) { EXTRAS = x; renderStrip(); if (morningOn) renderMorning(); } }, function () {});
 }
 
 /* ===== 3 familiebilleder fra Google Fotos (Drive-mappen) – alle skifter samtidig hvert minut ===== */
@@ -1116,10 +1132,69 @@ function renderSchedules() {
 function checkSchedule() {
   var on = isScheduleTime();
   if (on && scheduleDay().i !== schedDay) renderSchedules();
-  if (on === schedOn) return;
-  schedOn = on;
-  if (on) renderSchedules();
-  document.body.classList.toggle('skema', on);
+  if (on !== schedOn) {
+    schedOn = on;
+    if (on) renderSchedules();
+    document.body.classList.toggle('skema', on);
+  }
+  var m = on && hhmm(new Date()) < '12:00';   // kun morgenskemaet – ikke aftenen før
+  if (m !== morningOn) setMorning(m);
+}
+
+/* ===== Morgen: køretider og "i dag" i båndet, mens skemaet vises om morgenen ===== */
+ICONS.car = '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>';
+ICONS.calendar = '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>';
+var morningOn = false, DRIVE = null, driveTimer = null;
+var DRIVE_NAMES = ['Energinet', 'Distinkt Aarhus'];   // vises, indtil de første tider er hentet
+function fmtDrive(min) {   // 18M · 1T 5M
+  if (min == null) return '–';
+  var h = Math.floor(min / 60), m = min % 60;
+  return h ? h + 'T ' + m + 'M' : m + 'M';
+}
+function setMorning(on) {
+  morningOn = on;
+  document.body.classList.toggle('morgen', on);
+  clearInterval(driveTimer); driveTimer = null;
+  if (on) {
+    DRIVE = null; renderMorning(); loadDrive();
+    driveTimer = setInterval(loadDrive, 5 * 60 * 1000);   // ny køretid hvert 5. minut
+  } else renderStrip();
+}
+function loadDrive() {
+  if (!TOKEN || !morningOn) return;
+  call('getDriveTimes', [KEY, TOKEN]).then(function (d) { DRIVE = d; renderMorning(); }, handleErr);
+}
+function birthLine(b) {
+  var verb = b.dead ? ' ville være fyldt ' : (b.off < 0 ? ' fyldte ' : ' fylder ');
+  return b.name + verb + b.age + (b.off && b.when ? ' ' + b.when : '');
+}
+function renderMorning() {
+  var box = $('morning'); if (!box) return;
+  box.innerHTML = '';
+  // Venstre: køretid nu
+  var drv = el('div', 'mbox drive'), h1 = el('div', 'mh');
+  h1.innerHTML = svg('car', 18, 'currentColor', 2);
+  h1.appendChild(el('span', null, 'Køretid nu'));
+  drv.appendChild(h1);
+  var g1 = el('div', 'mg');
+  var routes = (DRIVE && DRIVE.routes) || DRIVE_NAMES.map(function (n) { return { name: n, min: null }; });
+  routes.forEach(function (r) { g1.appendChild(el('span', null, r.name)); g1.appendChild(el('span', 'tm', fmtDrive(r.min))); });
+  drv.appendChild(g1); box.appendChild(drv);
+  // Højre: i dag – fødselsdag og hvad der skete på dagen
+  var dk = dayKey(new Date()), x = EXTRAS && EXTRAS.date === dk ? EXTRAS : null;
+  var day = el('div', 'mbox day'), h2 = el('div', 'mh');
+  h2.innerHTML = svg('calendar', 18, 'currentColor', 2);
+  h2.appendChild(el('span', null, 'I dag'));
+  h2.appendChild(el('span', 'md', '(' + parseInt(dk.slice(8), 10) + '. ' + MONTHS[parseInt(dk.slice(5, 7), 10) - 1].slice(0, 3) + '.)'));
+  day.appendChild(h2);
+  var g2 = el('div', 'mg');
+  function row(icon, year, text) {
+    var i = el('span', 'mi'); i.innerHTML = svg(icon, 22, 'currentColor', 2);
+    g2.appendChild(i); g2.appendChild(el('span', 'yr', String(year))); g2.appendChild(el('span', 'tx', text));
+  }
+  if (x && x.birth) row('cake', x.birth.year || dk.slice(0, 4), birthLine(x.birth));
+  if (x && x.event) row('history', x.event.year, String(x.event.short || x.event.text).replace(/\.$/, '') + (x.event.off ? ' (' + x.event.when + ')' : ''));
+  if (g2.children.length) { day.appendChild(g2); box.appendChild(day); }
 }
 
 /* ===== Data ===== */
