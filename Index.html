@@ -649,7 +649,13 @@ function xmasGarland() {   // guirlande i 5 næsten lige buer, der kun ligger ov
     o += xBough(pts, rnd, 13, 19, 2.6);
     pts.forEach(function (p) { pts2.push([p[0] + rnd(-3, 3), p[1] + 5]); });
     o += xBough(pts2, rnd, 9, 14, 4);
-    [8, 16, 24, 32].forEach(function (j) { o += xLight(pts[j][0], pts[j][1] + 3, 3.6, rnd); });
+  }
+  // lys fordelt jævnt, men lidt uregelmæssigt (som en rigtig lyskæde) – ikke bag stjerner, julehjerte, nisser eller julekugler
+  var lr = xRand(11), FREE = [[26, 40], [158, 34], [338, 36], [1530, 40], [1744, 60], [1894, 40]];
+  for (var lx = 70; lx < W - 40; lx += lr(70, 96)) {
+    if (FREE.some(function (f) { return Math.abs(lx - f[0]) < f[1]; })) continue;
+    var ly = TOP + SAG * Math.sin(Math.PI * ((lx % 384) / 384)) + lr(1, 6);
+    o += xLight(lx, ly, 3.6, rnd);
   }
   return o + xNisser() + xOrnaments();
 }
