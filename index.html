@@ -47,6 +47,11 @@
   @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(14px); } }
   #deco .hop { animation: hop 3s ease-in-out infinite; transform-box: fill-box; }
   @keyframes hop { 0%, 80%, 100% { transform: translateY(0); } 90% { transform: translateY(-6px); } }
+  /* Jul: granguirlande over båndet og ned langs siderne – lysene gløder diskret op og ned som gammeldags glødepærer */
+  @keyframes xbr { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+  @keyframes xbc { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+  .xbr { animation: xbr 4s ease-in-out infinite; }
+  .xbc { animation: xbc 4s ease-in-out infinite; }
   .glow { display: none; }   /* ingen brun kant rundt om skærmen – mere plads til indholdet */
 
   /* ===== Øverst: 6 dage som kort – i dag, i morgen, i overmorgen øverst og de næste 3 under ===== */
@@ -154,6 +159,8 @@
   .mbox .mg { display: grid; align-items: baseline; column-gap: 14px; row-gap: 1px; font-size: 24px; font-weight: 600; line-height: 1.05; white-space: nowrap; }
   .mbox.drive .mg { grid-template-columns: auto auto; column-gap: 34px; }
   .mbox.day .mg { grid-template-columns: auto auto minmax(0, auto); }
+  .mbox.news .mg { grid-template-columns: auto minmax(0, auto); font-size: 22px; row-gap: 3px; }
+  .mbox.news .tx { max-width: 760px; }
   .mbox .tm { color: var(--accent); font-size: 27px; text-align: right; font-variant-numeric: tabular-nums; }
   .mbox .yr { color: var(--accent); font-variant-numeric: tabular-nums; }
   .mbox .mi { color: var(--muted); align-self: center; display: flex; }
@@ -497,7 +504,7 @@ function findSeason() {
   });
   list.push(
     { key: 'halloween', from: d(10, 21), to: d(10, 31), target: d(10, 31), icon: 'pumpkin', fx: 'embers', deco: 'webs' },
-    { key: 'jul',       from: d(12, 1),  to: d(12, 27), target: d(12, 24), icon: 'tree', fx: 'snow', deco: 'fir' },
+    { key: 'jul',       from: d(11, 22), to: d(12, 27), target: d(12, 24), icon: 'tree', fx: 'snow', deco: 'fir' },
     { key: 'nytaar',    from: d(12, 28), to: d(12, 31), target: d(1, 1, y + 1), icon: 'sparkles', fx: 'sparkle', deco: 'gold' },
     { key: 'nytaar',    from: d(1, 1),   to: d(1, 1),   target: d(1, 1), icon: 'sparkles', fx: 'sparkle', deco: 'gold' },
     { key: 'paaske',    from: e - 9 * D1, to: e + D1,   target: e, icon: 'chick', fx: 'petals', deco: 'chicks' },
@@ -529,6 +536,83 @@ function applySeason() {
   SEASON.id = key;
 }
 
+/* ===== Jul: granguirlande og stearinlys-dekorationer ===== */
+function xRand(seed) {   // fast tilfældighed, så granen ser ens ud hver gang
+  var s = seed;
+  return function (a, b) { s = s + 0x6D2B79F5 | 0; var t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return a + (b - a) * (((t ^ t >>> 14) >>> 0) / 4294967296); };
+}
+var X_GREENS = ['#1C3826', '#24462F', '#2E5639', '#3A6845', '#4A7A52'];
+var X_DEFS = '<radialGradient id="xglow"><stop offset="0" stop-color="#FFE3A3" stop-opacity=".9"/><stop offset=".35" stop-color="#FFC66B" stop-opacity=".35"/><stop offset="1" stop-color="#FFB040" stop-opacity="0"/></radialGradient>' +
+  '<radialGradient id="xflame" cx=".5" cy=".7" r=".6"><stop offset="0" stop-color="#FFF8DC"/><stop offset=".45" stop-color="#FFD36A"/><stop offset="1" stop-color="#F08A24"/></radialGradient>' +
+  '<linearGradient id="xwax" x1="0" x2="1"><stop offset="0" stop-color="#E9E2D4"/><stop offset=".4" stop-color="#FBF8F1"/><stop offset="1" stop-color="#D9D0BE"/></linearGradient>' +
+  '<radialGradient id="xberry" cx=".35" cy=".35"><stop offset="0" stop-color="#F06A6A"/><stop offset="1" stop-color="#8E1418"/></radialGradient>';
+function xBough(pts, rnd, n0, n1, step) {   // grangren: kvist + nåle i 5 grønne nuancer (samlet i 5 stier – let for TV'et)
+  var paths = {}; X_GREENS.forEach(function (c) { paths[c] = ''; });
+  for (var k = 0; k < pts.length - 1; k++) {
+    var x0 = pts[k][0], y0 = pts[k][1], dx = pts[k + 1][0] - x0, dy = pts[k + 1][1] - y0;
+    var seg = Math.sqrt(dx * dx + dy * dy) || 1, ux = dx / seg, uy = dy / seg, n = Math.floor(seg / step) + 1;
+    for (var i = 0; i < n; i++) {
+      var x = x0 + dx * i / n, y = y0 + dy * i / n;
+      [-1, 1].forEach(function (sg) {
+        var a = rnd(0.84, 1.19) * sg, l = rnd(n0, n1), ca = Math.cos(a), sa = Math.sin(a);
+        var vx = ux * ca - uy * sa, vy = ux * sa + uy * ca, c = X_GREENS[Math.floor(rnd(0, 5))];
+        paths[c] += 'M' + x.toFixed(1) + ' ' + y.toFixed(1) + 'q' + (vx * l * 0.5 - vy * l * 0.08).toFixed(1) + ' ' + (vy * l * 0.5 + vx * l * 0.08).toFixed(1) + ' ' + (vx * l).toFixed(1) + ' ' + (vy * l).toFixed(1);
+      });
+    }
+  }
+  var d = 'M' + pts.map(function (p) { return p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' L');
+  var s = '<path d="' + d + '" stroke="#4A3524" stroke-width="2.2" fill="none" opacity=".8"/>';
+  X_GREENS.forEach(function (c) { s += '<path d="' + paths[c] + '" stroke="' + c + '" stroke-width="1.8" stroke-linecap="round" fill="none"/>'; });
+  return s;
+}
+function xBranch(x, y, ang, len, curve, rnd, n0, n1) {
+  var pts = [], n = Math.max(4, Math.floor(len / 8));
+  for (var i = 0; i <= n; i++) {
+    var t = i / n, a = ang + curve * t;
+    pts.push([x + Math.cos(ang) * len * t + Math.cos(a + 1.57) * curve * len * t * t * 0.3, y + Math.sin(ang) * len * t + Math.sin(a + 1.57) * curve * len * t * t * 0.3]);
+  }
+  return xBough(pts, rnd, n0, n1, 3.2);
+}
+function xLight(x, y, r, rnd) {   // lille glødepære: blød glød + kerne, der langsomt bliver kraftigere og svagere (hver pære i sit eget tempo)
+  var d = rnd(3.2, 6.5).toFixed(2) + 's', dl = (-rnd(0, 6)).toFixed(2) + 's', st = 'animation-duration:' + d + ';animation-delay:' + dl;
+  return '<circle class="xbr" style="' + st + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (r * 5).toFixed(1) + '" fill="url(#xglow)"/>' +
+    '<circle class="xbc" style="' + st + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (r * 0.8).toFixed(1) + '" fill="#FFF1C9"/>';
+}
+function xBerries(x, y, s) {
+  return [[0, 0], [7, 4], [-5, 6]].map(function (p) {
+    return '<circle cx="' + (x + p[0] * s).toFixed(1) + '" cy="' + (y + p[1] * s).toFixed(1) + '" r="' + (5 * s).toFixed(1) + '" fill="url(#xberry)"/>' +
+      '<circle cx="' + (x + p[0] * s - 1.5 * s).toFixed(1) + '" cy="' + (y + p[1] * s - 1.8 * s).toFixed(1) + '" r="' + (1.3 * s).toFixed(1) + '" fill="#fff" opacity=".6"/>';
+  }).join('');
+}
+function xCone(x, y, ang, s) {
+  var o = '<g transform="translate(' + x + ',' + y + ') rotate(' + ang + ') scale(' + s + ')"><ellipse rx="10" ry="16" fill="#5A3A22"/>';
+  for (var j = 0; j < 5; j++) for (var i = 0; i < 3; i++) o += '<path d="M' + (-7 + i * 7) + ' ' + (-12 + j * 6) + ' q3.5 4 7 0" stroke="#3B2414" stroke-width="1.6" fill="#7A5232"/>';
+  return o + '</g>';
+}
+function xmasGarland() {   // guirlande i 5 næsten lige buer, der ligger oven på kanten af båndet (ur, citat, vejr) og videre ned langs siderne til ca. 5 % før bunden
+  var rnd = xRand(7), W = 1920, H = 1080, TOP = 468, SAG = 7, END = Math.round(H * 0.95);   // ligger oven på båndets kant (båndet starter ved 500)
+  var o = '<defs>' + X_DEFS + '</defs>', hangs = [0, 384, 768, 1152, 1536, 1920];
+  for (var i = 0; i < hangs.length - 1; i++) {
+    var x0 = hangs[i], x1 = hangs[i + 1], pts = [], pts2 = [];
+    for (var j = 0; j <= 40; j++) { var t = j / 40; pts.push([x0 + (x1 - x0) * t, TOP + SAG * Math.sin(Math.PI * t)]); }
+    o += xBough(pts, rnd, 13, 19, 2.6);
+    pts.forEach(function (p) { pts2.push([p[0] + rnd(-3, 3), p[1] + 5]); });
+    o += xBough(pts2, rnd, 9, 14, 4);
+    [8, 16, 24, 32].forEach(function (j) { o += xLight(pts[j][0], pts[j][1] + 3, 3.6, rnd); });
+  }
+  hangs.slice(1, -1).forEach(function (x) {   // små røde sløjfer, hvor buerne mødes
+    o += '<g transform="translate(' + x + ',' + (TOP + 4) + ') scale(0.75)"><path d="M0 0 C-30 -18 -34 14 0 2 C34 14 30 -18 0 0Z" fill="#A3232B"/>' +
+      '<path d="M0 2 l-12 34 l8 -4 l4 8z M0 2 l12 34 l-8 -4 l-4 8z" fill="#8E1C22"/><circle r="5" fill="#C2343C"/></g>';
+  });
+  [[1, 0], [-1, W]].forEach(function (sd) {   // ned langs siderne, afsluttet med kogle og bær
+    var sx = sd[0], x = sd[1], pts = [];
+    for (var y = TOP; y <= END; y += 6) pts.push([x + sx * 13 + 4 * Math.sin(y / 40), y]);
+    o += xBough(pts, rnd, 11, 16, 3.2);
+    for (var yy = TOP + 70; yy < END - 20; yy += 110) o += xLight(x + sx * 15, yy, 3.6, rnd);
+    o += xCone(x + sx * 22, END - 8, 10, 0.8) + xBerries(x + sx * 26, END + 10, 1);
+  });
+  return o;
+}
 /* ===== Sæsonpynt: lyskæde, flagranke, spindelvæv m.m. ===== */
 function drawDeco(kind) {
   var box = $('deco');
@@ -573,29 +657,7 @@ function drawDeco(kind) {
     }
   }
   var pastel = ['#E9A9C9', '#E7CB5F', '#9CC7A3', '#8FB8E8', '#F0B48A'];
-  if (kind === 'fir') {        // jul: grangren hele vejen rundt med røde og guld kugler og små varme lys
-    var dark = '', light = '';
-    for (var t = 0; t < L; t += 4) {
-      var p = sagPt(t, 8), tx = -p.ny, ty = p.nx, w = (7 + (t * 7 % 5)) * K;
-      [-1, 1].forEach(function (side, i) {
-        var dx = (tx * 0.55 + p.nx * side) * w, dy = (ty * 0.55 + p.ny * side) * w;
-        var d = 'M' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + 'l' + dx.toFixed(1) + ' ' + dy.toFixed(1);
-        if ((t / 4 + i) % 2) dark += d; else light += d;
-      });
-    }
-    out += '<path d="' + dark + '" stroke="#24452E" stroke-width="2.2" stroke-linecap="round" fill="none"/>' +
-           '<path d="' + light + '" stroke="#3A6B47" stroke-width="2" stroke-linecap="round" fill="none"/>';
-    for (var u = 40, n = 0; u < L; u += 95, n++) {
-      var q = sagPt(u, 8), col = n % 2 ? '#C9A24A' : '#B3262E';
-      out += '<g transform="translate(' + (q.x + q.nx * 8).toFixed(1) + ',' + (q.y + q.ny * 8).toFixed(1) + ') scale(' + K + ')">' +
-        '<circle r="8" fill="' + col + '"/><circle cx="-2.5" cy="-2.5" r="2.4" fill="rgba(255,255,255,0.45)"/></g>';
-    }
-    for (var v = 85; v < L; v += 95) {
-      var r = sagPt(v, 8);
-      out += '<circle class="tw" style="animation-delay:' + ((v * 0.013) % 2.6).toFixed(2) + 's" cx="' + (r.x + r.nx * 6).toFixed(1) + '" cy="' + (r.y + r.ny * 6).toFixed(1) +
-        '" r="3" fill="#FFE7B0" filter="url(#glow)"/>';
-    }
-  }
+  if (kind === 'fir') out += xmasGarland();   // jul: granguirlande i bløde buer over toppen (se xmasGarland)
   if (kind === 'flags') frameGarland(function () {     // Dannebrog-flagranke
     return '<g transform="translate(-14,2)"><rect width="28" height="20" fill="#C8102E"/><rect x="8.5" width="4" height="20" fill="#fff"/><rect y="8" width="28" height="4" fill="#fff"/></g>';
   }, 52, 14);
@@ -843,7 +905,7 @@ function renderCalendar() {
   }
 }
 
-/* ===== Vejr (Open-Meteo, gratis) – 7 dage i kalenderen ===== */
+/* ===== Vejr: Open-Meteo (solop-/nedgang og reserve) – baren bruger yr.no, se renderWx ===== */
 function wInfo(code) {
   if (code <= 1) return ['sun', code === 0 ? 'Klart' : 'Mest klart'];
   if (code <= 3) return [code === 2 ? 'partly' : 'cloud', code === 2 ? 'Delvis skyet' : 'Overskyet'];
@@ -910,14 +972,74 @@ function setClock(str) {   // tegner uret ciffer for ciffer og ruller kun de tal
   }
 }
 var HOURLY = null;
-function renderWx() {   // baren: vejret for i dag og i morgen (ikon og højeste temperatur)
-  var box = $('wxrows'); if (!box || !WEATHER) return;
+/* ===== Vejret i baren: yr.no (MET Norway) for Kolding – snit for kl. 8–20 i dag og i morgen =====
+ * I dag: fra timen lige nu (tidligst kl. 8) og frem til kl. 20 (fx kl. 15 → 15–20). I morgen: kl. 8–20.
+ * Temperatur = gennemsnit af timerne i tidsrummet. Ikon = det vejr, der fylder mest i tidsrummet;
+ * regner eller sner det i mindst 3 af timerne, vises regn/sne. Timer, der er gået, huskes fra tidligere hentninger.
+ * Svarer yr.no ikke, eller mangler der timer, bruges Open-Meteo som reserve. */
+var WX_FROM = 8, WX_TO = 20;
+var YR = (function () { try { return JSON.parse(localStorage.getItem('fs_yr') || '{}'); } catch (e) { return {}; } })();
+function yrIcon(sym) {   // yr.no's symbolkoder → skærmens 5 ikoner
+  sym = String(sym || '').replace(/_(day|night|polartwilight)$/, '');
+  if (/snow/.test(sym)) return 'snow';
+  if (/rain|sleet|showers|thunder/.test(sym)) return 'rain';
+  if (sym === 'clearsky' || sym === 'fair') return 'sun';
+  if (sym === 'partlycloudy') return 'partly';
+  return 'cloud';
+}
+function wxHourKey(d) {   // 'YYYY-MM-DD HH' i dansk tid
+  var p = new Intl.DateTimeFormat('sv-SE', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' }).format(d);
+  return p.slice(0, 13);
+}
+function loadYr() {
+  fetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=' + LAT.toFixed(2) + '&lon=' + LON.toFixed(2))
+  .then(function (r) { if (!r.ok) throw new Error('yr ' + r.status); return r.json(); }).then(function (j) {
+    (j.properties.timeseries || []).forEach(function (s) {
+      var d = s.data || {}, n1 = d.next_1_hours;
+      if (!n1) return;   // kun timeprognoser (de første par døgn)
+      YR[wxHourKey(new Date(s.time))] = { t: d.instant.details.air_temperature, i: yrIcon(n1.summary.symbol_code) };
+    });
+    var keep = dayKey(addDays(new Date(), -1));   // ryd op: kun i går og frem
+    Object.keys(YR).forEach(function (k) { if (k.slice(0, 10) < keep) delete YR[k]; });
+    try { localStorage.setItem('fs_yr', JSON.stringify(YR)); } catch (e) {}
+    renderWx();
+  }).catch(function () {});
+}
+function wxHours(day, from, to) {   // timerne from–to for en dag – fra yr.no, ellers Open-Meteo
+  var out = [];
+  for (var h = from; h < to; h++) {
+    var k = day + ' ' + (h < 10 ? '0' : '') + h, y = YR[k];
+    if (y) { out.push(y); continue; }
+    if (HOURLY && HOURLY.time) {
+      var i = HOURLY.time.indexOf(day + 'T' + (h < 10 ? '0' : '') + h + ':00');
+      if (i >= 0) out.push({ t: HOURLY.temperature_2m[i], i: wInfo(HOURLY.weather_code[i])[0] });
+    }
+  }
+  return out;
+}
+function wxDay(day, from, to) {   // snit: gennemsnitstemperatur + det vejr, der fylder mest
+  var hrs = wxHours(day, from, to);
+  if (!hrs.length) return null;
+  var sum = 0, n = { sun: 0, partly: 0, cloud: 0, rain: 0, snow: 0 };
+  hrs.forEach(function (x) { sum += x.t; n[x.i]++; });
+  var icon;
+  if (n.rain + n.snow >= 3) icon = n.snow > n.rain ? 'snow' : 'rain';
+  else icon = ['partly', 'sun', 'cloud'].reduce(function (a, b) { return n[b] > n[a] ? b : a; });
+  return { icon: icon, temp: Math.round(sum / hrs.length) };
+}
+// I dag: kun resten af dagen – fra timen lige nu (dog tidligst kl. 8) og frem til kl. 20.
+// Fx kl. 6 → 8–20 · kl. 12 → 12–20 · kl. 15 → 15–20 · kl. 18 → 18–20 · efter kl. 20 → resten af aftenen til midnat
+function wxNowFrom(now) { return Math.max(WX_FROM, parseInt(hhmm(now).slice(0, 2), 10)); }
+function wxNowTo(now) { return wxNowFrom(now) < WX_TO ? WX_TO : 24; }
+function renderWx() {   // baren: resten af i dag og i morgen kl. 8–20 (ikon og gennemsnitstemperatur)
+  var box = $('wxrows'); if (!box) return;
   var now = new Date(); box.innerHTML = '';
   [['I dag', 0], ['I morgen', 1]].forEach(function (sl) {
-    var w = WEATHER[dayKey(addDays(now, sl[1]))]; if (!w) return;
+    var w = sl[1] === 0 ? wxDay(dayKey(now), wxNowFrom(now), wxNowTo(now)) : wxDay(dayKey(addDays(now, 1)), WX_FROM, WX_TO);
+    if (!w) return;
     var c = el('div', 'slot' + (sl[1] === 0 ? ' cur' : ''));
     c.appendChild(el('div', 'h', sl[0]));
-    var r = el('div', 'r'); r.innerHTML = wxSvg(w.icon, 52, 1.6) + '<span>' + w.max + '°</span>';
+    var r = el('div', 'r'); r.innerHTML = wxSvg(w.icon, 52, 1.6) + '<span>' + w.temp + '°</span>';
     c.appendChild(r); box.appendChild(c);
   });
 }
@@ -1019,8 +1141,8 @@ function loadExtras() {   // én gang i døgnet (serveren gemmer dagens indslag)
 var PHOTOS = [], pIndex = 0, SHOWING = [null, null, null], photosStarted = false;
 var MONTHS = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
 function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
-function photoDate(name) {   // '20240714-001.jpg' → 'Sommer 2024' (årstid og år ud fra datoen i filnavnet)
-  var m = /^(\d{4})(\d{2})\d{2}-/.exec(name || '');
+function photoDate(name, taken) {   // '20240714-001.jpg' → 'Sommer 2024' (filnavnet først, ellers kameraets dato 'YYYY-MM')
+  var m = /^(\d{4})(\d{2})\d{2}-/.exec(name || '') || /^(\d{4})-(\d{2})$/.exec(taken || '');
   if (!m || +m[1] < 1900 || +m[1] > 2100) return '';
   var mo = +m[2], season = mo >= 3 && mo <= 5 ? 'Forår' : mo >= 6 && mo <= 8 ? 'Sommer' : mo >= 9 && mo <= 11 ? 'Efterår' : 'Vinter';
   return season + ' ' + m[1];
@@ -1031,7 +1153,7 @@ function loadImage(id) {
     var src = 'data:' + p.mime + ';base64,' + p.data;
     return new Promise(function (res) {
       var img = new Image();
-      img.onload = function () { res({ id: id, src: src, name: p.name || '' }); };
+      img.onload = function () { res({ id: id, src: src, name: p.name || '', taken: p.taken || '', place: p.place || '' }); };
       img.onerror = function () { res(null); };
       img.src = src;
     });
@@ -1064,7 +1186,7 @@ function showSet() {
     next.querySelector('.cbg').src = p.src; next.querySelector('.fg').src = p.src;
     next.classList.remove('zoom'); void next.offsetWidth;   // start zoomen forfra
     next.classList.add('show', 'zoom'); if (cur) cur.classList.remove('show');   // fade ind / fade ud (det gamle billede beholder sin zoom)
-    box.querySelector('.pdate').textContent = photoDate(p.name);
+    box.querySelector('.pdate').textContent = [photoDate(p.name, p.taken), p.place || ''].filter(Boolean).join(' · ');   // fx 'Sommer 2024 · Aarhus' – det, der ikke vides, udelades
     SHOWING[f] = p.id;
   });
   setTimeout(prefetchSet, 2500);
@@ -1141,10 +1263,11 @@ function checkSchedule() {
   if (m !== morningOn) setMorning(m);
 }
 
-/* ===== Morgen: køretider og "i dag" i båndet, mens skemaet vises om morgenen ===== */
+/* ===== Morgen: køretider og dagens vigtigste nyheder i båndet, mens skemaet vises om morgenen ===== */
 ICONS.car = '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>';
+ICONS.news = '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/>';
 ICONS.calendar = '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>';
-var morningOn = false, DRIVE = null, driveTimer = null;
+var morningOn = false, DRIVE = null, NEWS = null, driveTimer = null;
 var DRIVE_NAMES = ['Energinet', 'Distinkt Aarhus'];   // vises, indtil de første tider er hentet
 function fmtDrive(min) {   // 18M · 1T 5M
   if (min == null) return '–';
@@ -1160,9 +1283,11 @@ function setMorning(on) {
     driveTimer = setInterval(loadDrive, 5 * 60 * 1000);   // ny køretid hvert 5. minut
   } else renderStrip();
 }
-function loadDrive() {
+function loadDrive() {   // køretider hvert 5. minut – nyhederne hentes kl. 6 og gemmes af serveren
   if (!TOKEN || !morningOn) return;
   call('getDriveTimes', [KEY, TOKEN]).then(function (d) { DRIVE = d; renderMorning(); }, handleErr);
+  if (!(NEWS && NEWS.date === dayKey(new Date()) && NEWS.items && NEWS.items.length))
+    call('getMorningNews', [KEY, TOKEN]).then(function (n) { NEWS = n; renderMorning(); }, function () {});
 }
 function birthLine(b) {
   var verb = b.dead ? ' ville være fyldt ' : (b.off < 0 ? ' fyldte ' : ' fylder ');
@@ -1180,21 +1305,24 @@ function renderMorning() {
   var routes = (DRIVE && DRIVE.routes) || DRIVE_NAMES.map(function (n) { return { name: n, min: null }; });
   routes.forEach(function (r) { g1.appendChild(el('span', null, r.name)); g1.appendChild(el('span', 'tm', fmtDrive(r.min))); });
   drv.appendChild(g1); box.appendChild(drv);
-  // Højre: i dag – fødselsdag og hvad der skete på dagen
-  var dk = dayKey(new Date()), x = EXTRAS && EXTRAS.date === dk ? EXTRAS : null;
-  var day = el('div', 'mbox day'), h2 = el('div', 'mh');
-  h2.innerHTML = svg('calendar', 18, 'currentColor', 2);
-  h2.appendChild(el('span', null, 'I dag'));
-  h2.appendChild(el('span', 'md', '(' + parseInt(dk.slice(8), 10) + '. ' + MONTHS[parseInt(dk.slice(5, 7), 10) - 1].slice(0, 3) + '.)'));
-  day.appendChild(h2);
+  // Højre: dagens vigtigste nyheder (DR – ellers TV 2)
+  var items = NEWS && NEWS.date === dayKey(new Date()) ? (NEWS.items || []) : [];
+  if (!items.length) return;
+  var nb = el('div', 'mbox news'), h2 = el('div', 'mh');
+  h2.innerHTML = svg('news', 18, 'currentColor', 2);
+  h2.appendChild(el('span', null, 'Vigtigste nyheder'));
+  h2.appendChild(el('span', 'md', '(' + items[0].src + ')'));
+  nb.appendChild(h2);
   var g2 = el('div', 'mg');
-  function row(icon, year, text) {
-    var i = el('span', 'mi'); i.innerHTML = svg(icon, 22, 'currentColor', 2);
-    g2.appendChild(i); g2.appendChild(el('span', 'yr', String(year))); g2.appendChild(el('span', 'tx', text));
-  }
-  if (x && x.birth) row('cake', x.birth.year || dk.slice(0, 4), birthLine(x.birth));
-  if (x && x.event) row('history', x.event.year, String(x.event.short || x.event.text).replace(/\.$/, '') + (x.event.off ? ' (' + x.event.when + ')' : ''));
-  if (g2.children.length) { day.appendChild(g2); box.appendChild(day); }
+  items.forEach(function (n, i) {
+    g2.appendChild(el('span', 'yr', String(i + 1)));
+    g2.appendChild(el('span', 'tx', String(n.title).replace(/\.$/, '')));
+  });
+  nb.appendChild(g2); box.appendChild(nb);
+  // altid én linje pr. nyhed: teksten gøres mindre (ned til 18 px), og er den stadig for lang, afsluttes den med …
+  var fs = 22; g2.style.fontSize = fs + 'px';
+  function tooLong() { return [].some.call(g2.querySelectorAll('.tx'), function (t) { return t.scrollWidth > t.clientWidth + 1; }); }
+  while (tooLong() && fs > 18) { fs -= 1; g2.style.fontSize = fs + 'px'; }
 }
 
 /* ===== Data ===== */
@@ -1221,6 +1349,7 @@ loadExtras(); setInterval(loadExtras, 60 * 1000);   // tjekker hvert minut – h
 startRotation();   // billeder og bånd skifter sammen hvert 2. minut
 setInterval(function () { renderCalendar(); renderWx(); }, 5 * 60 * 1000);
 loadWeather(); setInterval(loadWeather, 60 * 60 * 1000);
+loadYr(); setInterval(loadYr, 30 * 60 * 1000);   // yr.no hver halve time
 if (TOKEN) startData(); else showPin();
 </script>
 
