@@ -48,8 +48,8 @@
   #deco .hop { animation: hop 3s ease-in-out infinite; transform-box: fill-box; }
   @keyframes hop { 0%, 80%, 100% { transform: translateY(0); } 90% { transform: translateY(-6px); } }
   /* Jul: granguirlande over båndet og ned langs siderne – lysene gløder diskret op og ned som gammeldags glødepærer */
-  @keyframes xbr { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }   /* gløden svinger tydeligt op og ned */
-  @keyframes xbc { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+  @keyframes xbr { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.7; } }   /* rolig glød – 70 % lys, svinger blødt op og ned */
+  @keyframes xbc { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.75; } }
   .xbr { animation: xbr 4s ease-in-out infinite; }
   .xbc { animation: xbc 4s ease-in-out infinite; }
   @keyframes xsw { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
@@ -590,7 +590,8 @@ function xBranch(x, y, ang, len, curve, rnd, n0, n1) {
   return xBough(pts, rnd, n0, n1, 3.2);
 }
 function xLight(x, y, r, rnd) {   // lille glødepære: blød glød + kerne, der langsomt bliver kraftigere og svagere (hver pære i sit eget tempo)
-  var d = rnd(3.2, 6.5).toFixed(2) + 's', dl = (-rnd(0, 6)).toFixed(2) + 's', st = 'animation-duration:' + d + ';animation-delay:' + dl;
+  var d = rnd(5, 9).toFixed(2) + 's', dl = (-rnd(0, 9)).toFixed(2) + 's',   // langsommere = mere roligt
+      st = 'animation-duration:' + d + ';animation-delay:' + dl;
   return '<circle class="xbr" style="' + st + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (r * 6.5).toFixed(1) + '" fill="url(#xglow)"/>' +   // ca. 50 % mere lys end før
     '<circle class="xbc" style="' + st + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (r * 0.95).toFixed(1) + '" fill="#FFF6DC"/>';
 }
@@ -648,7 +649,13 @@ function xmasGarland() {   // guirlande i 5 næsten lige buer, der kun ligger ov
     o += xBough(pts, rnd, 13, 19, 2.6);
     pts.forEach(function (p) { pts2.push([p[0] + rnd(-3, 3), p[1] + 5]); });
     o += xBough(pts2, rnd, 9, 14, 4);
-    [8, 16, 24, 32].forEach(function (j) { o += xLight(pts[j][0], pts[j][1] + 3, 3.6, rnd); });
+  }
+  // lys fordelt jævnt, men lidt uregelmæssigt (som en rigtig lyskæde) – ikke bag stjerner, julehjerte, nisser eller julekugler
+  var lr = xRand(11), FREE = [[26, 40], [158, 34], [338, 36], [1530, 40], [1744, 60], [1894, 40]];
+  for (var lx = 70; lx < W - 40; lx += lr(70, 96)) {
+    if (FREE.some(function (f) { return Math.abs(lx - f[0]) < f[1]; })) continue;
+    var ly = TOP + SAG * Math.sin(Math.PI * ((lx % 384) / 384)) + lr(1, 6);
+    o += xLight(lx, ly, 3.6, rnd);
   }
   return o + xNisser() + xOrnaments();
 }
