@@ -150,21 +150,18 @@
   .txt .who { color: var(--muted); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* ===== Morgen (skematid før kl. 12): køretider + "i dag" i stedet for vits, citat osv. ===== */
-  .seg.morning { position: absolute; top: 0; bottom: 0; left: 50%; width: 1180px; margin-left: -590px; padding: 0; display: none; flex-direction: row; align-items: center; justify-content: center; gap: 18px; }
+  .seg.morning { position: absolute; top: 0; bottom: 0; left: 50%; width: 1180px; margin-left: -590px; padding: 0; display: none; flex-direction: row; align-items: center; justify-content: flex-start; gap: 40px; }
   body.morgen .seg.one { display: none; }
   body.morgen .seg.morning { display: flex; }
-  .mbox { height: 84px; box-sizing: border-box; background: var(--chip); border-radius: var(--r); padding: 4px 26px; display: flex; flex-direction: column; justify-content: center; gap: 3px; min-width: 0; }
-  .mbox .mh { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; letter-spacing: 0.18em; color: var(--accent); text-transform: uppercase; line-height: 1; }
-  .mbox .mh .md { color: var(--muted); letter-spacing: 0.1em; }
-  .mbox .mg { display: grid; align-items: baseline; column-gap: 14px; row-gap: 1px; font-size: 24px; font-weight: 600; line-height: 1.05; white-space: nowrap; }
-  .mbox.drive .mg { grid-template-columns: auto auto; column-gap: 34px; }
-  .mbox.day .mg { grid-template-columns: auto auto minmax(0, auto); }
-  .mbox.news .mg { grid-template-columns: auto minmax(0, auto); font-size: 22px; row-gap: 3px; }
-  .mbox.news .tx { max-width: 760px; }
-  .mbox .tm { color: var(--accent); font-size: 27px; text-align: right; font-variant-numeric: tabular-nums; }
-  .mbox .yr { color: var(--accent); font-variant-numeric: tabular-nums; }
-  .mbox .mi { color: var(--muted); align-self: center; display: flex; }
-  .mbox .tx { overflow: hidden; text-overflow: ellipsis; max-width: 600px; }
+  /* morgen: køretider lige efter uret, nyheder centreret – aften: kun nyheder (med kildemærke) */
+  .mb-drive { flex: none; display: flex; flex-direction: column; gap: 2px; font-size: 24px; font-weight: 600; line-height: 1.12; white-space: nowrap; }
+  .mb-drive .dt { font-variant-numeric: tabular-nums; }   /* tiden i samme hvide farve og størrelse som stednavnet */
+  .mb-news { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; font-size: 23px; font-weight: 600; line-height: 1.15; }
+  .mb-row { display: flex; align-items: center; gap: 12px; max-width: 100%; min-width: 0; }
+  .mb-tx { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .src { flex: none; font-size: 13px; font-weight: 800; letter-spacing: 0.08em; line-height: 1; color: #fff; border-radius: 5px; padding: 4px 8px; }
+  .src-dr { background: #A3232B; }
+  .src-tv2 { background: #2F5FA8; }
 
   /* ===== Bunden: 3 familiebilleder fra Google Fotos ===== */
   #bottom { position: absolute; left: 16px; right: 16px; top: 606px; bottom: 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
@@ -1127,7 +1124,7 @@ function startRotation() { clearInterval(rotTimer); rotTimer = setInterval(rotat
 function loadExtras() {   // én gang i døgnet (serveren gemmer dagens indslag)
   if (EXTRAS && EXTRAS.date === dayKey(new Date())) return;
   if (!TOKEN) return;
-  call('getTodayExtras', [KEY, TOKEN]).then(function (x) { if (x) { EXTRAS = x; renderStrip(); if (morningOn) renderMorning(); } }, function () {});
+  call('getTodayExtras', [KEY, TOKEN]).then(function (x) { if (x) { EXTRAS = x; renderStrip(); } }, function () {});
 }
 
 /* ===== 3 familiebilleder fra Google Fotos (Drive-mappen) – alle skifter samtidig hvert minut ===== */
@@ -1252,70 +1249,60 @@ function checkSchedule() {
     if (on) renderSchedules();
     document.body.classList.toggle('skema', on);
   }
-  var m = on && hhmm(new Date()) < '12:00';   // kun morgenskemaet – ikke aftenen før
-  if (m !== morningOn) setMorning(m);
+  var mode = on ? (hhmm(new Date()) < '12:00' ? 'morning' : 'evening') : '';   // morgen: køretider + nyheder · aften: dagens nyheder
+  if (mode !== bandMode) setBandMode(mode);
 }
 
-/* ===== Morgen: køretider og dagens vigtigste nyheder i båndet, mens skemaet vises om morgenen ===== */
-ICONS.car = '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>';
-ICONS.news = '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/>';
-ICONS.calendar = '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>';
-var morningOn = false, DRIVE = null, NEWS = null, driveTimer = null;
+/* ===== Skematid: nyheder (og om morgenen køretider) i båndet i stedet for vits, citat osv. ===== */
+var bandMode = '', DRIVE = null, NEWS = {}, bandTimer = null;
 var DRIVE_NAMES = ['Energinet', 'Distinkt Aarhus'];   // vises, indtil de første tider er hentet
 function fmtDrive(min) {   // 18M · 1T 5M
   if (min == null) return '–';
   var h = Math.floor(min / 60), m = min % 60;
   return h ? h + 'T ' + m + 'M' : m + 'M';
 }
-function setMorning(on) {
-  morningOn = on;
-  document.body.classList.toggle('morgen', on);
-  clearInterval(driveTimer); driveTimer = null;
-  if (on) {
-    DRIVE = null; renderMorning(); loadDrive();
-    driveTimer = setInterval(loadDrive, 5 * 60 * 1000);   // ny køretid hvert 5. minut
+function setBandMode(mode) {   // '' (som normalt) · 'morning' · 'evening'
+  bandMode = mode;
+  document.body.classList.toggle('morgen', !!mode);
+  clearInterval(bandTimer); bandTimer = null;
+  if (mode) {
+    DRIVE = null; renderMorning(); loadBand();
+    bandTimer = setInterval(loadBand, 5 * 60 * 1000);   // køretider hvert 5. minut
   } else renderStrip();
 }
-function loadDrive() {   // køretider hvert 5. minut – nyhederne hentes kl. 6 og gemmes af serveren
-  if (!TOKEN || !morningOn) return;
-  call('getDriveTimes', [KEY, TOKEN]).then(function (d) { DRIVE = d; renderMorning(); }, handleErr);
-  if (!(NEWS && NEWS.date === dayKey(new Date()) && NEWS.items && NEWS.items.length))
-    call('getMorningNews', [KEY, TOKEN]).then(function (n) { NEWS = n; renderMorning(); }, function () {});
-}
-function birthLine(b) {
-  var verb = b.dead ? ' ville være fyldt ' : (b.off < 0 ? ' fyldte ' : ' fylder ');
-  return b.name + verb + b.age + (b.off && b.when ? ' ' + b.when : '');
+function loadBand() {   // nyhederne hentes kl. 6 og kl. 16.45 og gemmes af serveren
+  if (!TOKEN || !bandMode) return;
+  var mode = bandMode;
+  if (mode === 'morning') call('getDriveTimes', [KEY, TOKEN]).then(function (d) { DRIVE = d; renderMorning(); }, handleErr);
+  var n = NEWS[mode];
+  if (!(n && n.date === dayKey(new Date()) && n.items && n.items.length))
+    call('getNews', [KEY, TOKEN, mode]).then(function (x) { NEWS[mode] = x; renderMorning(); }, function () {});
 }
 function renderMorning() {
-  var box = $('morning'); if (!box) return;
+  var box = $('morning'); if (!box || !bandMode) return;
   box.innerHTML = '';
-  // Venstre: køretid nu
-  var drv = el('div', 'mbox drive'), h1 = el('div', 'mh');
-  h1.innerHTML = svg('car', 18, 'currentColor', 2);
-  h1.appendChild(el('span', null, 'Køretid nu'));
-  drv.appendChild(h1);
-  var g1 = el('div', 'mg');
-  var routes = (DRIVE && DRIVE.routes) || DRIVE_NAMES.map(function (n) { return { name: n, min: null }; });
-  routes.forEach(function (r) { g1.appendChild(el('span', null, r.name)); g1.appendChild(el('span', 'tm', fmtDrive(r.min))); });
-  drv.appendChild(g1); box.appendChild(drv);
-  // Højre: dagens vigtigste nyheder (DR – ellers TV 2)
-  var items = NEWS && NEWS.date === dayKey(new Date()) ? (NEWS.items || []) : [];
-  if (!items.length) return;
-  var nb = el('div', 'mbox news'), h2 = el('div', 'mh');
-  h2.innerHTML = svg('news', 18, 'currentColor', 2);
-  h2.appendChild(el('span', null, 'Vigtigste nyheder'));
-  h2.appendChild(el('span', 'md', '(' + items[0].src + ')'));
-  nb.appendChild(h2);
-  var g2 = el('div', 'mg');
-  items.forEach(function (n, i) {
-    g2.appendChild(el('span', 'yr', String(i + 1)));
-    g2.appendChild(el('span', 'tx', String(n.title).replace(/\.$/, '')));
+  if (bandMode === 'morning') {   // køretider lige efter uret: "Energinet: 18M"
+    var drv = el('div', 'mb-drive');
+    var routes = (DRIVE && DRIVE.routes) || DRIVE_NAMES.map(function (n) { return { name: n, min: null }; });
+    routes.forEach(function (r) {
+      var line = el('div'); line.appendChild(document.createTextNode(r.name + ': ')); line.appendChild(el('span', 'dt', fmtDrive(r.min)));
+      drv.appendChild(line);
+    });
+    box.appendChild(drv);
+  }
+  var n = NEWS[bandMode], items = n && n.date === dayKey(new Date()) ? (n.items || []) : [];
+  var nb = el('div', 'mb-news');
+  items.forEach(function (it) {
+    var r = el('div', 'mb-row');
+    if (bandMode === 'evening') r.appendChild(el('span', 'src ' + (it.src === 'DR' ? 'src-dr' : 'src-tv2'), it.src));
+    r.appendChild(el('span', 'mb-tx', String(it.title).replace(/\.$/, '')));
+    nb.appendChild(r);
   });
-  nb.appendChild(g2); box.appendChild(nb);
+  box.appendChild(nb);
   // altid én linje pr. nyhed: teksten gøres mindre (ned til 18 px), og er den stadig for lang, afsluttes den med …
-  var fs = 22; g2.style.fontSize = fs + 'px';
-  function tooLong() { return [].some.call(g2.querySelectorAll('.tx'), function (t) { return t.scrollWidth > t.clientWidth + 1; }); }
-  while (tooLong() && fs > 18) { fs -= 1; g2.style.fontSize = fs + 'px'; }
+  var fs = 23; nb.style.fontSize = fs + 'px';
+  function tooLong() { return [].some.call(nb.querySelectorAll('.mb-tx'), function (t) { return t.scrollWidth > t.clientWidth + 1; }); }
+  while (tooLong() && fs > 18) { fs -= 1; nb.style.fontSize = fs + 'px'; }
 }
 
 /* ===== Data ===== */
