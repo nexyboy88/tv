@@ -589,8 +589,8 @@ function xCone(x, y, ang, s) {
   for (var j = 0; j < 5; j++) for (var i = 0; i < 3; i++) o += '<path d="M' + (-7 + i * 7) + ' ' + (-12 + j * 6) + ' q3.5 4 7 0" stroke="#3B2414" stroke-width="1.6" fill="#7A5232"/>';
   return o + '</g>';
 }
-function xmasGarland() {   // guirlande i 5 næsten lige buer, der ligger oven på kanten af båndet (ur, citat, vejr) og videre ned langs siderne til ca. 5 % før bunden
-  var rnd = xRand(7), W = 1920, H = 1080, TOP = 468, SAG = 7, END = Math.round(H * 0.95);   // ligger oven på båndets kant (båndet starter ved 500)
+function xmasGarland() {   // guirlande i 5 næsten lige buer, der kun ligger oven på kanten af båndet (over ur, tekst og vejr)
+  var rnd = xRand(7), W = 1920, TOP = 468, SAG = 7;   // ligger oven på båndets kant (båndet starter ved 500)
   var o = '<defs>' + X_DEFS + '</defs>', hangs = [0, 384, 768, 1152, 1536, 1920];
   for (var i = 0; i < hangs.length - 1; i++) {
     var x0 = hangs[i], x1 = hangs[i + 1], pts = [], pts2 = [];
@@ -603,13 +603,6 @@ function xmasGarland() {   // guirlande i 5 næsten lige buer, der ligger oven p
   hangs.slice(1, -1).forEach(function (x) {   // små røde sløjfer, hvor buerne mødes
     o += '<g transform="translate(' + x + ',' + (TOP + 4) + ') scale(0.75)"><path d="M0 0 C-30 -18 -34 14 0 2 C34 14 30 -18 0 0Z" fill="#A3232B"/>' +
       '<path d="M0 2 l-12 34 l8 -4 l4 8z M0 2 l12 34 l-8 -4 l-4 8z" fill="#8E1C22"/><circle r="5" fill="#C2343C"/></g>';
-  });
-  [[1, 0], [-1, W]].forEach(function (sd) {   // ned langs siderne, afsluttet med kogle og bær
-    var sx = sd[0], x = sd[1], pts = [];
-    for (var y = TOP; y <= END; y += 6) pts.push([x + sx * 13 + 4 * Math.sin(y / 40), y]);
-    o += xBough(pts, rnd, 11, 16, 3.2);
-    for (var yy = TOP + 70; yy < END - 20; yy += 110) o += xLight(x + sx * 15, yy, 3.6, rnd);
-    o += xCone(x + sx * 22, END - 8, 10, 0.8) + xBerries(x + sx * 26, END + 10, 1);
   });
   return o;
 }
