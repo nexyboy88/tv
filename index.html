@@ -1334,7 +1334,7 @@ function loadBand() {   // nyhederne hentes kl. 6 og kl. 16.45 og gemmes af serv
   var mode = bandMode;
   if (mode === 'morning') call('getDriveTimes', [KEY, TOKEN]).then(function (d) { DRIVE = d; renderMorning(); }, handleErr);
   var n = NEWS[mode];
-  if (!(n && n.date === dayKey(new Date()) && n.items && n.items.length))
+  if (!(n && n.date === dayKey(new Date()) && n.items && n.items.length >= 2))   // spørg igen, indtil der er 2 nyheder
     call('getNews', [KEY, TOKEN, mode]).then(function (x) { NEWS[mode] = x; renderMorning(); }, function () {});
 }
 function renderMorning() {
