@@ -48,8 +48,8 @@
   #deco .hop { animation: hop 3s ease-in-out infinite; transform-box: fill-box; }
   @keyframes hop { 0%, 80%, 100% { transform: translateY(0); } 90% { transform: translateY(-6px); } }
   /* Jul: granguirlande over båndet og ned langs siderne – lysene gløder diskret op og ned som gammeldags glødepærer */
-  @keyframes xbr { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
-  @keyframes xbc { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+  @keyframes xbr { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }   /* gløden svinger tydeligt op og ned */
+  @keyframes xbc { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
   .xbr { animation: xbr 4s ease-in-out infinite; }
   .xbc { animation: xbc 4s ease-in-out infinite; }
   @keyframes xsw { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
@@ -556,7 +556,7 @@ function xRand(seed) {   // fast tilfældighed, så granen ser ens ud hver gang
   return function (a, b) { s = s + 0x6D2B79F5 | 0; var t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return a + (b - a) * (((t ^ t >>> 14) >>> 0) / 4294967296); };
 }
 var X_GREENS = ['#1C3826', '#24462F', '#2E5639', '#3A6845', '#4A7A52'];
-var X_DEFS = '<radialGradient id="xglow"><stop offset="0" stop-color="#FFE3A3" stop-opacity=".9"/><stop offset=".35" stop-color="#FFC66B" stop-opacity=".35"/><stop offset="1" stop-color="#FFB040" stop-opacity="0"/></radialGradient>' +
+var X_DEFS = '<radialGradient id="xglow"><stop offset="0" stop-color="#FFE8B0" stop-opacity="1"/><stop offset=".35" stop-color="#FFC66B" stop-opacity=".55"/><stop offset="1" stop-color="#FFB040" stop-opacity="0"/></radialGradient>' +
   '<radialGradient id="xflame" cx=".5" cy=".7" r=".6"><stop offset="0" stop-color="#FFF8DC"/><stop offset=".45" stop-color="#FFD36A"/><stop offset="1" stop-color="#F08A24"/></radialGradient>' +
   '<linearGradient id="xwax" x1="0" x2="1"><stop offset="0" stop-color="#E9E2D4"/><stop offset=".4" stop-color="#FBF8F1"/><stop offset="1" stop-color="#D9D0BE"/></linearGradient>' +
   '<radialGradient id="xberry" cx=".35" cy=".35"><stop offset="0" stop-color="#F06A6A"/><stop offset="1" stop-color="#8E1418"/></radialGradient>';
@@ -589,8 +589,8 @@ function xBranch(x, y, ang, len, curve, rnd, n0, n1) {
 }
 function xLight(x, y, r, rnd) {   // lille glødepære: blød glød + kerne, der langsomt bliver kraftigere og svagere (hver pære i sit eget tempo)
   var d = rnd(3.2, 6.5).toFixed(2) + 's', dl = (-rnd(0, 6)).toFixed(2) + 's', st = 'animation-duration:' + d + ';animation-delay:' + dl;
-  return '<circle class="xbr" style="' + st + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (r * 5).toFixed(1) + '" fill="url(#xglow)"/>' +
-    '<circle class="xbc" style="' + st + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (r * 0.8).toFixed(1) + '" fill="#FFF1C9"/>';
+  return '<circle class="xbr" style="' + st + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (r * 6.5).toFixed(1) + '" fill="url(#xglow)"/>' +   // ca. 50 % mere lys end før
+    '<circle class="xbc" style="' + st + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (r * 0.95).toFixed(1) + '" fill="#FFF6DC"/>';
 }
 function xBerries(x, y, s) {
   return [[0, 0], [7, 4], [-5, 6]].map(function (p) {
@@ -648,8 +648,9 @@ function xmasGarland() {   // guirlande i 5 næsten lige buer, der kun ligger ov
     o += xBough(pts2, rnd, 9, 14, 4);
     [8, 16, 24, 32].forEach(function (j) { o += xLight(pts[j][0], pts[j][1] + 3, 3.6, rnd); });
   }
-  hangs.slice(1, -1).forEach(function (x) {   // små røde sløjfer, hvor buerne mødes
-    o += '<g transform="translate(' + x + ',' + (TOP + 4) + ') scale(0.75)"><path d="M0 0 C-30 -18 -34 14 0 2 C34 14 30 -18 0 0Z" fill="#A3232B"/>' +
+  [636, 934, 1232].forEach(function (x) {   // 3 røde sløjfer med lige stor afstand mellem de to kravlenisser (x 338 og 1530)
+    var t = (x % 384) / 384, y = TOP + SAG * Math.sin(Math.PI * t);
+    o += '<g transform="translate(' + x + ',' + (y + 4).toFixed(1) + ') scale(0.75)"><path d="M0 0 C-30 -18 -34 14 0 2 C34 14 30 -18 0 0Z" fill="#A3232B"/>' +
       '<path d="M0 2 l-12 34 l8 -4 l4 8z M0 2 l12 34 l-8 -4 l-4 8z" fill="#8E1C22"/><circle r="5" fill="#C2343C"/></g>';
   });
   return o + xNisser();
